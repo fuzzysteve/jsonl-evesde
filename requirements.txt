@@ -1,0 +1,8 @@
+et_xmlfile==2.0.0
+greenlet==3.2.4
+openpyxl==3.1.5
+psycopg==3.2.12
+PyMySQL==1.1.2
+PyYAML==6.0.3
+SQLAlchemy==2.0.44
+typing_extensions==4.15.0

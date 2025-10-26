@@ -1,0 +1,14 @@
+[Database]
+mysql=mysql+pymysql://yaml:yamlpass@localhost/sdeyaml?charset=utf8
+postgres=postgresql+psycopg2://yaml:yaml@localhost/sdeyaml
+postgresschema=postgresql+psycopg2://yaml:yaml@localhost/sdeyamlschema
+sqlite=sqlite+pysqlite:///eve.db
+mssql=mssql+pymssql://evesde:Dnm24syusKIIvo1@localhost/evesde?charset=utf8
+
+[Files]
+sourcePath=/opt/sde/files/
+destinationPath=/opt/sde/output/
+
+[Redis]
+server=localhost
+db=0
