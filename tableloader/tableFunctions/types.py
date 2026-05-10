@@ -111,3 +111,50 @@ def import_dogma(connection,metadata,sourcePath,language='en'):
                 stmt=insert(dgmEffects).values(typeID=key,effectID=effect.get("effectID"),isDefault=effect.get("isDefault"))
                 connection.execute(stmt)
     trans.commit()
+
+
+
+def import_groups(connection,metadata,sourcePath,language='en'):
+    invGroups = Table('invGroups',metadata)
+    trnTranslations = Table('trnTranslations',metadata)
+    print("Importing Groups")
+    trans = connection.begin()
+    with open(os.path.join(sourcePath,'groups.jsonl'), 'r') as json_file:
+        json_list = list(json_file)
+    for json_str in json_list:
+        groupdata = json.loads(json_str)
+        stmt=insert(invGroups).values(groupID=groupdata['_key'],
+                                      anchorable=groupdata['anchorable'],
+                                      anchored=groupdata['anchored'],
+                                      categoryID=groupdata['categoryID'],
+                                      fittableNonSingleton=groupdata['fittableNonSingleton'],
+                                      groupName=groupdata['name'].get(language,''),
+                                      published=groupdata['published'],
+                                      useBasePrice=groupdata['useBasePrice'],
+                                      iconID=groupdata.get('iconID',None))
+        connection.execute(stmt)
+        if 'name' in groupdata:
+            for lang in groupdata['name']:
+                stmt=insert(trnTranslations).values(tcID=7,keyID=groupdata['_key'],languageID=lang,text=groupdata['name'][lang])
+                connection.execute(stmt)
+    trans.commit()
+
+def import_categories(connection,metadata,sourcePath,language='en'):
+    invCategories = Table('invCategories',metadata)
+    trnTranslations = Table('trnTranslations',metadata)
+    print("Importing Categories")
+    trans = connection.begin()
+    with open(os.path.join(sourcePath,'categories.jsonl'), 'r') as json_file:
+        json_list = list(json_file)
+    for json_str in json_list:
+        categorydata = json.loads(json_str)
+        stmt=insert(invCategories).values(categoryID=categorydata['_key'],
+                                      categoryName=categorydata['name'].get(language,''),
+                                      published=categorydata['published'],
+                                      iconID=categorydata.get('iconID',None))
+        connection.execute(stmt)
+        if 'name' in categorydata:
+            for lang in categorydata['name']:
+                stmt=insert(trnTranslations).values(tcID=6,keyID=categorydata['_key'],languageID=lang,text=categorydata['name'][lang])
+                connection.execute(stmt)
+    trans.commit()

@@ -67,4 +67,7 @@ import tableloader.tableFunctions
 #types.import_types(connection,metadata,sourcePath,language)
 #types.import_bonus(connection,metadata,sourcePath,language)
 #types.import_materials(connection,metadata,sourcePath,language)
-types.import_dogma(connection,metadata,sourcePath,language)
+#types.import_dogma(connection,metadata,sourcePath,language)
+#types.import_groups(connection,metadata,sourcePath,language)
+#types.import_categories(connection,metadata,sourcePath,language)
+blueprints.import_blueprints(connection,metadata,sourcePath,language)
