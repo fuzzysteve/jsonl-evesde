@@ -6,6 +6,19 @@ import json
 import os
 from sqlalchemy import Table,insert
 
+
+
+def _trunc(s, length=100):
+    """Truncate a string to fit a VARCHAR column. Logs if truncation occurs."""
+    if s is None:
+        return None
+    if len(s) > length:
+        print("  WARNING: truncating name to {}: '{}'".format(length, s))
+        return s[:length]
+    return s
+
+
+
 def import_types(connection,metadata,sourcePath,language='en'):
     invTypes = Table('invTypes',metadata)
     trnTranslations = Table('trnTranslations',metadata)
@@ -18,7 +31,7 @@ def import_types(connection,metadata,sourcePath,language='en'):
         typedata = json.loads(json_str)
         stmt=insert(invTypes).values(typeID=typedata['_key'],
                             groupID=typedata.get('groupID',0),
-                            typeName=typedata.get('name',{}).get(language,''),
+                            typeName=_trunc(typedata.get('name',{}).get(language,'')),
                             description=typedata.get('description',{}).get(language,''),
                             mass=typedata.get('mass',0),
                             volume=typedata.get('volume',0),
@@ -85,7 +98,7 @@ def import_materials(connection,metadata,sourcePath,language='en'):
         typedata = json.loads(json_str)
         key=typedata['_key']
 
-        for material in typedata['materials']:
+        for material in typedata.get('materials',[]):
             stmt=insert(invTypeMaterials).values(typeID=key,materialTypeID=material['materialTypeID'],quantity=material['quantity'])
             connection.execute(stmt)
     trans.commit()
