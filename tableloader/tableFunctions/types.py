@@ -18,6 +18,20 @@ def _trunc(s, length=100):
     return s
 
 
+def _en(d, language='en'):
+    if isinstance(d, dict):
+        return d.get(language) or d.get('en')
+    return d
+
+
+def _jsonl(sourcePath, filename):
+    filepath = os.path.join(sourcePath, filename)
+    with open(filepath, 'r', encoding='utf-8') as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                yield json.loads(line)
+
 
 def import_types(connection,metadata,sourcePath,language='en'):
     invTypes = Table('invTypes',metadata)
@@ -171,3 +185,46 @@ def import_categories(connection,metadata,sourcePath,language='en'):
                 stmt=insert(trnTranslations).values(tcID=6,keyID=categorydata['_key'],languageID=lang,text=categorydata['name'][lang])
                 connection.execute(stmt)
     trans.commit()
+
+ 
+def import_meta_groups(connection, metadata, sourcePath, language='en'):
+    """metaGroups.jsonl -> invMetaGroups"""
+    print("Importing metaGroups")
+    tbl = Table('invMetaGroups', metadata)
+    trnTranslations = Table('trnTranslations', metadata)
+    trans = connection.begin()
+    for r in _jsonl(sourcePath, 'metaGroups.jsonl'):
+        connection.execute(insert(tbl).values(
+            metaGroupID   = r['_key'],
+            metaGroupName = _en(r.get('name', {}), language),
+            description   = _en(r.get('description', {}), language),
+            iconID        = r.get('iconID'),
+        ))
+        for lang, text in r.get('name', {}).items():
+            connection.execute(insert(trnTranslations).values(
+                tcID=15, keyID=r['_key'], languageID=lang, text=text))
+    trans.commit()
+ 
+def import_market_groups(connection, metadata, sourcePath, language='en'):
+    """marketGroups.jsonl -> invMarketGroups + trnTranslations"""
+    print("Importing marketGroups")
+    tbl = Table('invMarketGroups', metadata)
+    trnTranslations = Table('trnTranslations', metadata)
+    trans = connection.begin()
+    count = 0
+    for r in _jsonl(sourcePath, 'marketGroups.jsonl'):
+        connection.execute(insert(tbl).values(
+            marketGroupID   = r['_key'],
+            parentGroupID   = r.get('parentGroupID'),
+            marketGroupName = _en(r.get('name', {}), language),
+            description     = _en(r.get('description', {}), language),
+            iconID          = r.get('iconID'),
+            hasTypes        = r.get('hasTypes'),
+        ))
+        for lang, text in r.get('name', {}).items():
+            connection.execute(insert(trnTranslations).values(
+                tcID=14, keyID=r['_key'], languageID=lang, text=text))
+        count += 1
+    trans.commit()
+    print("    {} rows".format(count))
+

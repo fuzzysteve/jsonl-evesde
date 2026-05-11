@@ -34,6 +34,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _en(d, language='en'):
+    if isinstance(d, dict):
+        return d.get(language) or d.get('en')
+    return d
+ 
+
+
 def _name(record, language='en'):
     n = record.get('name', {})
     if isinstance(n, dict):
@@ -542,6 +549,45 @@ def import_npc_stations(connection, metadata, sourcePath, language='en'):
             security        = sec,
             celestialIndex  = r.get('celestialIndex'),
             orbitIndex      = r.get('orbitIndex'),
+        ))
+        count += 1
+    trans.commit()
+    print("    {} rows".format(count))
+
+
+def import_station_services(connection, metadata, sourcePath, language='en'):
+    """stationServices.jsonl -> staServices"""
+    print("Importing stationServices")
+    tbl = Table('staServices', metadata)
+    trans = connection.begin()
+    count = 0
+    for r in _jsonl(sourcePath, 'stationServices.jsonl'):
+        connection.execute(insert(tbl).values(
+            serviceID   = r['_key'],
+            serviceName = _en(r.get('serviceName', {}), language),
+            description = _en(r.get('description', {}), language),
+        ))
+        count += 1
+    trans.commit()
+    print("    {} rows".format(count))
+
+def import_landmarks(connection, metadata, sourcePath, language='en'):
+    """landmarks.jsonl -> mapLandmarks"""
+    print("Importing landmarks")
+    tbl = Table('mapLandmarks', metadata)
+    trans = connection.begin()
+    count = 0
+    for r in _jsonl(sourcePath, 'landmarks.jsonl'):
+        p = r.get('position', {})
+        connection.execute(insert(tbl).values(
+            landmarkID   = r['_key'],
+            landmarkName = _en(r.get('name', {}), language),
+            description  = _en(r.get('description', {}), language),
+            locationID   = r.get('locationID'),
+            x            = p.get('x'),
+            y            = p.get('y'),
+            z            = p.get('z'),
+            iconID       = r.get('iconID'),
         ))
         count += 1
     trans.commit()

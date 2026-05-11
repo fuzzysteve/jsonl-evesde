@@ -217,7 +217,7 @@ def metadataCreator(schema):
             Column('investorShares4', INTEGER()),
             Column('friendID', INTEGER()),
             Column('enemyID', INTEGER()),
-            Column('publicShares', INTEGER()),
+            Column('publicShares', BigInteger),
             Column('initialPrice', INTEGER()),
             Column('minSecurity', FLOAT()),
             Column('scattered', Boolean(name='cnpcc_scatt')),
@@ -231,6 +231,7 @@ def metadataCreator(schema):
             Column('stationSystemCount', INTEGER()),
             Column('description', VARCHAR(length=4000)),
             Column('iconID', INTEGER()),
+            Column('corporationName', VARCHAR(length=100)),
             schema=schema
 
 
@@ -356,6 +357,8 @@ def metadataCreator(schema):
             Column('sofHullName', VARCHAR(length=100)),
             Column('sofRaceName', VARCHAR(length=100)),
             Column('description',UnicodeText()),
+            Column('iconFolder',      VARCHAR(length=256), nullable=True),
+            Column('sofMaterialSetID', INTEGER(),           nullable=True),
             schema=schema
 
 
@@ -1172,5 +1175,79 @@ def metadataCreator(schema):
 
 
     )
+
+    typeListsHeader = Table('typeListsHeader', metadata,
+        Column('typeListID',          Integer,     primary_key=True),
+        Column('name',                Text, nullable=True),
+        Column('displayName',         Text, nullable=True),
+        Column('displayDescription',  Text,        nullable=True),
+        schema=schema
+    )
+ 
+    typeListsIncludedTypeIDs = Table('typeListsIncludedTypeIDs', metadata,
+        Column('typeListID', Integer, primary_key=True),
+        Column('typeID',     Integer, primary_key=True),
+        schema=schema
+    )
+ 
+    typeListsExcludedTypeIDs = Table('typeListsExcludedTypeIDs', metadata,
+        Column('typeListID', Integer, primary_key=True),
+        Column('typeID',     Integer, primary_key=True),
+        schema=schema
+    )
+ 
+    typeListsIncludedGroupIDs = Table('typeListsIncludedGroupIDs', metadata,
+        Column('typeListID', Integer, primary_key=True),
+        Column('groupID',    Integer, primary_key=True),
+        schema=schema
+    )
+ 
+    typeListsExcludedGroupIDs = Table('typeListsExcludedGroupIDs', metadata,
+        Column('typeListID', Integer, primary_key=True),
+        Column('groupID',    Integer, primary_key=True),
+        schema=schema
+    )
+ 
+    typeListsIncludedCategoryIDs = Table('typeListsIncludedCategoryIDs', metadata,
+        Column('typeListID',  Integer, primary_key=True),
+        Column('categoryID',  Integer, primary_key=True),
+        schema=schema
+    )
+ 
+    typeListsExcludedCategoryIDs = Table('typeListsExcludedCategoryIDs', metadata,
+        Column('typeListID',  Integer, primary_key=True),
+        Column('categoryID',  Integer, primary_key=True),
+        schema=schema
+    )
+
+    planetResources = Table('planetResources', metadata,
+        Column('celestialID',           Integer,  primary_key=True),  # planet itemID
+        Column('power',                 Integer,  nullable=True),
+        Column('workforce',             Integer,  nullable=True),
+        Column('reagentTypeID',         Integer,  nullable=True),
+        Column('reagentAmountPerCycle', Integer,  nullable=True),
+        Column('reagentCyclePeriod',    Integer,  nullable=True),
+        Column('reagentSecuredCap',     Integer,  nullable=True),
+        Column('reagentUnsecuredCap',   Integer,  nullable=True),
+        schema=schema
+    )
+
+    npcCharacters = Table('npcCharacters', metadata,
+        Column('characterID',   Integer,     primary_key=True),
+        Column('characterName', String(100), nullable=True),
+        Column('corporationID', Integer,     nullable=True),
+        Column('locationID',    Integer,     nullable=True),
+        Column('raceID',        Integer,     nullable=True),
+        Column('bloodlineID',   Integer,     nullable=True),
+        Column('ancestryID',    Integer,     nullable=True),
+        Column('gender',        Boolean,     nullable=True),
+        Column('careerID',      Integer,     nullable=True),
+        Column('schoolID',      Integer,     nullable=True),
+        Column('specialityID',  Integer,     nullable=True),
+        Column('startDate',     String(30),  nullable=True),
+        Column('isCeo',         Boolean,     nullable=True),
+        schema=schema
+    )
+
 
     return metadata
