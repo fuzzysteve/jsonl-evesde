@@ -489,7 +489,7 @@ def import_npc_stations(connection, metadata, sourcePath, language='en'):
 
     op_names = {}
     for r in _jsonl(sourcePath, 'stationOperations.jsonl'):
-        op_names[r['_key']] = _name(r.get('operationName', {}), language)
+        op_names[r['_key']] = _en(r.get('operationName', {}), language)
 
     trans = connection.begin()
     count = 0

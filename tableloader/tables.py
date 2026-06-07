@@ -1249,5 +1249,25 @@ def metadataCreator(schema):
         schema=schema
     )
 
+    shipSkills = Table('shipSkills', metadata,
+        Column('typeID', INTEGER(),index=True),
+        Column('groupID',INTEGER()),
+        Column('skillID', INTEGER(),index=True),
+        Column('level', INTEGER()),
+        schema=schema
+    )
+    chrCloneGrades = Table('chrCloneGrades', metadata,
+        Column('cloneGradeID', Integer,     primary_key=True),
+        Column('name',        String(100), nullable=True),
+        schema=schema
+    )
+ 
+    chrCloneGradeSkills = Table('chrCloneGradeSkills', metadata,
+        Column('cloneGradeID', Integer, primary_key=True),
+        Column('typeID',      Integer, primary_key=True),
+        Column('level',       Integer, nullable=True),
+        schema=schema
+    )
+
 
     return metadata
