@@ -57,7 +57,10 @@ def import_types(connection,metadata,sourcePath,language='en'):
                             marketGroupID=typedata.get('marketGroupID'),
                             graphicID=typedata.get('graphicID',0),
                             iconID=typedata.get('iconID'),
-                            soundID=typedata.get('soundID'))
+                            soundID=typedata.get('soundID'),
+                            factionID=typedata.get('factionID'),
+                            metaLevel=typedata.get('metaLevel'),
+                            shipTreeGroupID=typedata.get('shipTreeGroupID'))
         connection.execute(stmt)
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:
             stmt=insert(invMetaTypes).values(typeID=typedata['_key'],metaGroupID=typedata.get('metaGroupID'),parentTypeID=typedata.get('variationParentTypeID'))

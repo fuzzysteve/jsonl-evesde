@@ -350,6 +350,31 @@ def metadataCreator(schema):
     )
 
 
+    graphicMaterialSets = Table('graphicMaterialSets', metadata,
+            Column('materialSetID',  INTEGER(),           primary_key=True, autoincrement=False, nullable=False),
+            Column('description',    VARCHAR(length=256), nullable=True),
+            Column('sofFactionName', VARCHAR(length=100), nullable=True),
+            Column('sofRaceHint',    VARCHAR(length=100), nullable=True),
+            Column('colorHullR',     FLOAT(precision=53), nullable=True),
+            Column('colorHullG',     FLOAT(precision=53), nullable=True),
+            Column('colorHullB',     FLOAT(precision=53), nullable=True),
+            Column('colorHullA',     FLOAT(precision=53), nullable=True),
+            Column('colorPrimaryR',  FLOAT(precision=53), nullable=True),
+            Column('colorPrimaryG',  FLOAT(precision=53), nullable=True),
+            Column('colorPrimaryB',  FLOAT(precision=53), nullable=True),
+            Column('colorPrimaryA',  FLOAT(precision=53), nullable=True),
+            Column('colorSecondaryR', FLOAT(precision=53), nullable=True),
+            Column('colorSecondaryG', FLOAT(precision=53), nullable=True),
+            Column('colorSecondaryB', FLOAT(precision=53), nullable=True),
+            Column('colorSecondaryA', FLOAT(precision=53), nullable=True),
+            Column('colorWindowR',   FLOAT(precision=53), nullable=True),
+            Column('colorWindowG',   FLOAT(precision=53), nullable=True),
+            Column('colorWindowB',   FLOAT(precision=53), nullable=True),
+            Column('colorWindowA',   FLOAT(precision=53), nullable=True),
+            schema=schema
+    )
+
+
     eveGraphics =  Table('eveGraphics', metadata,
             Column('graphicID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('sofFactionName', VARCHAR(length=100)),
@@ -647,6 +672,9 @@ def metadataCreator(schema):
             Column('iconID', INTEGER()),
             Column('soundID', INTEGER()),
             Column('graphicID', INTEGER()),
+            Column('factionID', INTEGER()),
+            Column('metaLevel', INTEGER()),
+            Column('shipTreeGroupID', INTEGER()),
             schema=schema
 
 
@@ -1269,5 +1297,343 @@ def metadataCreator(schema):
         schema=schema
     )
 
+    # Add these inside metadataCreator() in tables.py
+
+    chrTitles = Table('chrTitles', metadata,
+        Column('titleID',   String(36),  primary_key=True),  # UUID
+        Column('titleName', String(255), nullable=True),
+        schema=schema
+    )
+
+    dungeonArchetypes = Table('dungeonArchetypes', metadata,
+        Column('archetypeID',  INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('title',        VARCHAR(length=255), nullable=True),
+        Column('description',  UnicodeText(),       nullable=True),
+        schema=schema
+    )
+
+    mstMissions = Table('mstMissions', metadata,
+        Column('missionID',               INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('missionName',             VARCHAR(length=255), nullable=True),
+        Column('hasStandingRewards',      Boolean(), nullable=True),
+        Column('factionID',               INTEGER(), nullable=True),
+        Column('corporationID',           INTEGER(), nullable=True),
+        Column('agentTypeID',             INTEGER(), nullable=True),
+        Column('expirationTime',          INTEGER(), nullable=True),
+        Column('initialAgentGiftTypeID',  INTEGER(), nullable=True),
+        Column('initialAgentGiftQty',     INTEGER(), nullable=True),
+        Column('killDungeonID',           INTEGER(), nullable=True),
+        Column('killObjectiveQty',        INTEGER(), nullable=True),
+        Column('courierObjectiveTypeID',  INTEGER(), nullable=True),
+        Column('courierObjectiveQty',     INTEGER(), nullable=True),
+        Column('courierObjectiveSingleton', Boolean(), nullable=True),
+        Column('bonusRewardTypeID',       INTEGER(), nullable=True),
+        Column('bonusRewardQty',          INTEGER(), nullable=True),
+        Column('bonusTimeInterval',       INTEGER(), nullable=True),
+        Column('rewardTypeID',            INTEGER(), nullable=True),
+        Column('rewardQty',               INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    mstMissionMessages = Table('mstMissionMessages', metadata,
+        Column('missionID',  INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('messageKey', VARCHAR(length=100), primary_key=True, autoincrement=False, nullable=False),
+        Column('text',       UnicodeText(),       nullable=True),
+        schema=schema
+    )
+
+    mstMissionExtraStandings = Table('mstMissionExtraStandings', metadata,
+        Column('missionID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('factionID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('standing',  FLOAT(),   nullable=True),
+        schema=schema
+    )
+
+    epicArcs = Table('epicArcs', metadata,
+        Column('arcID',               INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('arcName',             VARCHAR(length=255), nullable=True),
+        Column('factionID',           INTEGER(), nullable=True),
+        Column('iconID',              INTEGER(), nullable=True),
+        Column('arcRestartInterval',  INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    epicArcMissions = Table('epicArcMissions', metadata,
+        Column('arcID',         INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('missionID',     INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('agentID',       INTEGER(), nullable=True),
+        Column('failMissionID', INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    epicArcMissionNextMissions = Table('epicArcMissionNextMissions', metadata,
+        Column('missionID',     INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('nextMissionID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    dungeons = Table('dungeons', metadata,
+        Column('dungeonID',   INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('dungeonName', VARCHAR(length=255), nullable=True),
+        Column('description', UnicodeText(),       nullable=True),
+        Column('archetypeID', INTEGER(),           nullable=True),
+        Column('factionID',   INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    dungeonAllowedShips = Table('dungeonAllowedShips', metadata,
+        Column('dungeonID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('typeID',    INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    shipTreeElements = Table('shipTreeElements', metadata,
+        Column('elementID',   INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',        VARCHAR(length=255), nullable=True),
+        Column('description', UnicodeText(),       nullable=True),
+        Column('icon',        VARCHAR(length=255), nullable=True),
+        schema=schema
+    )
+
+    shipTreeGroups = Table('shipTreeGroups', metadata,
+        Column('groupID',      INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',         VARCHAR(length=255), nullable=True),
+        Column('description',  UnicodeText(),       nullable=True),
+        Column('icon',         VARCHAR(length=512), nullable=True),
+        Column('iconLarge',    VARCHAR(length=512), nullable=True),
+        Column('iconSmall',    VARCHAR(length=512), nullable=True),
+        Column('iconSmallNPC', VARCHAR(length=512), nullable=True),
+        schema=schema
+    )
+
+    shipTreeGroupElements = Table('shipTreeGroupElements', metadata,
+        Column('groupID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('elementID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('value',     INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    shipTreeGroupPreReqSkills = Table('shipTreeGroupPreReqSkills', metadata,
+        Column('groupID',    INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('factionID',  INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('skillID',    INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('level',      INTEGER(), nullable=True),
+        Column('display',    Boolean(), nullable=True),
+        schema=schema
+    )
+
+    shipTreeFactions = Table('shipTreeFactions', metadata,
+        Column('factionID',   INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('description', UnicodeText(),       nullable=True),
+        Column('icon',        VARCHAR(length=512), nullable=True),
+        schema=schema
+    )
+
+    shipTreeFactionElements = Table('shipTreeFactionElements', metadata,
+        Column('factionID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('elementID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('value',     INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    typeElements = Table('typeElements', metadata,
+        Column('typeID',    INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('elementID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('value',     INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    compressibleTypes = Table('compressibleTypes', metadata,
+        Column('typeID',           INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('compressedTypeID', INTEGER(), nullable=False),
+        schema=schema
+    )
+
+    freelanceJobSchemas = Table('freelanceJobSchemas', metadata,
+        Column('jobSchemaID',        VARCHAR(length=100),  primary_key=True, nullable=False),
+        Column('title',              VARCHAR(length=255),  nullable=True),
+        Column('description',        UnicodeText(),        nullable=True),
+        Column('progressDescription', UnicodeText(),       nullable=True),
+        Column('rewardDescription',  UnicodeText(),        nullable=True),
+        Column('targetDescription',  UnicodeText(),        nullable=True),
+        Column('iconID',             VARCHAR(length=100),  nullable=True),
+        schema=schema
+    )
+
+    freelanceJobSchemaContentTags = Table('freelanceJobSchemaContentTags', metadata,
+        Column('jobSchemaID', VARCHAR(length=100), primary_key=True, nullable=False),
+        Column('tag',         VARCHAR(length=100), primary_key=True, nullable=False),
+        schema=schema
+    )
+
+    freelanceJobSchemaParameters = Table('freelanceJobSchemaParameters', metadata,
+        Column('jobSchemaID',         VARCHAR(length=100), primary_key=True, nullable=False),
+        Column('paramKey',            VARCHAR(length=100), primary_key=True, nullable=False),
+        Column('acceptedValueTypes',  UnicodeText(),       nullable=True),
+        schema=schema
+    )
+
+    skinrComponentCategories = Table('skinrComponentCategories', metadata,
+        Column('categoryID', INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',       VARCHAR(length=100), nullable=True),
+        schema=schema
+    )
+
+    skinrComponentRarities = Table('skinrComponentRarities', metadata,
+        Column('rarityID', INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',     VARCHAR(length=100), nullable=True),
+        Column('rank',     INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    skinrComponentPointValues = Table('skinrComponentPointValues', metadata,
+        Column('categoryID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('rarityID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('points',     INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    skinrComponents = Table('skinrComponents', metadata,
+        Column('componentID',          INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',                 VARCHAR(length=255), nullable=True),
+        Column('categoryID',           INTEGER(),           nullable=True),
+        Column('rarityID',             INTEGER(),           nullable=True),
+        Column('finish',               VARCHAR(length=50),  nullable=True),
+        Column('published',            Boolean(),           nullable=True),
+        Column('iconFile',             VARCHAR(length=512), nullable=True),
+        Column('resourceFile',         VARCHAR(length=512), nullable=True),
+        Column('projectionTypeU',      VARCHAR(length=50),  nullable=True),
+        Column('projectionTypeV',      VARCHAR(length=50),  nullable=True),
+        Column('sequenceBinderCount',  INTEGER(),           nullable=True),
+        Column('sequenceBinderTypeID', INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    skinrComponentTypes = Table('skinrComponentTypes', metadata,
+        Column('componentID',       INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('typeID',            INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('licenseUsesGranted', INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    skinrSlotCategories = Table('skinrSlotCategories', metadata,
+        Column('categoryID', INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',       VARCHAR(length=100), nullable=True),
+        schema=schema
+    )
+
+    skinrSlotNames = Table('skinrSlotNames', metadata,
+        Column('slotNameID', INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',       VARCHAR(length=100), nullable=True),
+        schema=schema
+    )
+
+    skinrSlots = Table('skinrSlots', metadata,
+        Column('slotID',     INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',       VARCHAR(length=255), nullable=True),
+        Column('categoryID', INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    skinrSlotAllowedCategories = Table('skinrSlotAllowedCategories', metadata,
+        Column('slotID',     INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('categoryID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    skinrSlotConfigurations = Table('skinrSlotConfigurations', metadata,
+        Column('configID',     INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',         VARCHAR(length=255), nullable=True),
+        Column('priority',     INTEGER(),           nullable=True),
+        Column('allowAllShips', Boolean(),          nullable=True),
+        schema=schema
+    )
+
+    skinrSlotConfigurationSlots = Table('skinrSlotConfigurationSlots', metadata,
+        Column('configID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('slotID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    skinrSlotConfigurationShips = Table('skinrSlotConfigurationShips', metadata,
+        Column('configID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('typeID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    skinrTierThresholds = Table('skinrTierThresholds', metadata,
+        Column('groupID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('tier',      INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('threshold', INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    milCampaigns = Table('milCampaigns', metadata,
+        Column('campaignID',       VARCHAR(length=36), primary_key=True, nullable=False),
+        Column('title',            VARCHAR(length=255), nullable=True),
+        Column('subtitle',         UnicodeText(),       nullable=True),
+        Column('factionID',        INTEGER(),           nullable=True),
+        Column('targetProgress',   INTEGER(),           nullable=True),
+        Column('campaignSet',      VARCHAR(length=100), nullable=True),
+        Column('race',             VARCHAR(length=50),  nullable=True),
+        Column('themePack',        VARCHAR(length=100), nullable=True),
+        Column('mapFocusEntityID', INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    milCampaignObjectives = Table('milCampaignObjectives', metadata,
+        Column('objectiveID',                  VARCHAR(length=36), primary_key=True, nullable=False),
+        Column('campaignID',                   VARCHAR(length=36), nullable=True, index=True),
+        Column('title',                        VARCHAR(length=255), nullable=True),
+        Column('subtitle',                     UnicodeText(),       nullable=True),
+        Column('careerPath',                   VARCHAR(length=100), nullable=True),
+        Column('targetProgress',               INTEGER(),           nullable=True),
+        Column('maxProgressPerParticipant',    INTEGER(),           nullable=True),
+        Column('presentingCharacterID',        INTEGER(),           nullable=True),
+        Column('issuerCorporationID',          INTEGER(),           nullable=True),
+        Column('contributionMethod',           VARCHAR(length=100), nullable=True),
+        Column('contributionParameters',       UnicodeText(),       nullable=True),
+        Column('requiredEnlistmentFactionID',  INTEGER(),           nullable=True),
+        Column('rewardIskAmount',              FLOAT(),             nullable=True),
+        Column('rewardIskInterval',            INTEGER(),           nullable=True),
+        Column('rewardIskCorporationID',       INTEGER(),           nullable=True),
+        Column('rewardLpAmount',               FLOAT(),             nullable=True),
+        Column('rewardLpInterval',             INTEGER(),           nullable=True),
+        Column('rewardLpCorporationID',        INTEGER(),           nullable=True),
+        Column('rewardStandingPercent',        FLOAT(),             nullable=True),
+        Column('rewardStandingInterval',       INTEGER(),           nullable=True),
+        Column('rewardStandingFactionID',      INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    milCampaignObjContentTags = Table('milCampaignObjContentTags', metadata,
+        Column('objectiveID', VARCHAR(length=36), primary_key=True, nullable=False),
+        Column('tag',         VARCHAR(length=100), primary_key=True, nullable=False),
+        schema=schema
+    )
+
+    mercenaryTacticalOperations = Table('mercenaryTacticalOperations', metadata,
+        Column('operationID',      INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('name',             VARCHAR(length=255), nullable=True),
+        Column('description',      UnicodeText(),       nullable=True),
+        Column('dungeonID',        INTEGER(),           nullable=True),
+        Column('anarchyImpact',    INTEGER(),           nullable=True),
+        Column('developmentImpact', INTEGER(),          nullable=True),
+        Column('infomorphBonus',   INTEGER(),           nullable=True),
+        schema=schema
+    )
+
+    sovereigntyUpgrades = Table('sovereigntyUpgrades', metadata,
+        Column('typeID',                 INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
+        Column('mutuallyExclusiveGroup', VARCHAR(length=100), nullable=True),
+        Column('powerAllocation',        INTEGER(),           nullable=True),
+        Column('powerProduction',        INTEGER(),           nullable=True),
+        Column('workforceAllocation',    INTEGER(),           nullable=True),
+        Column('workforceProduction',    INTEGER(),           nullable=True),
+        Column('fuelTypeID',             INTEGER(),           nullable=True),
+        Column('fuelHourlyUpkeep',       INTEGER(),           nullable=True),
+        Column('fuelStartupCost',        INTEGER(),           nullable=True),
+        schema=schema
+    )
 
     return metadata

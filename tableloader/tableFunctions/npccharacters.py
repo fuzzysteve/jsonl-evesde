@@ -28,8 +28,9 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
     print("Importing npcCharacters")
     tblChars  = Table('npcCharacters', metadata)
     tblAgents = Table('agtAgents', metadata)
+    tblResearch = Table('agtResearchAgents', metadata)
     trans = connection.begin()
-    total = agents = 0
+    total = agents = research = 0
     for r in _jsonl(sourcePath, 'npcCharacters.jsonl'):
         connection.execute(insert(tblChars).values(
             characterID   = r['_key'],
@@ -60,5 +61,12 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
                 isLocator     = agent.get('isLocator'),
             ))
             agents += 1
+        for skill in r.get('skills', []):
+            connection.execute(insert(tblResearch).values(
+                agentID = r['_key'],
+                typeID  = skill['typeID'],
+            ))
+            research += 1
+
     trans.commit()
     print("    {} characters, {} agents".format(total, agents))

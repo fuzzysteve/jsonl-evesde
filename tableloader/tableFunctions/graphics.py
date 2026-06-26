@@ -14,6 +14,44 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def import_graphic_material_sets(connection, metadata, sourcePath, language='en'):
+    """graphicMaterialSets.jsonl -> graphicMaterialSets"""
+    print("Importing graphicMaterialSets")
+    tbl = Table('graphicMaterialSets', metadata)
+    trans = connection.begin()
+    count = 0
+    for r in _jsonl(sourcePath, 'graphicMaterialSets.jsonl'):
+        hull      = r.get('colorHull', {})
+        primary   = r.get('colorPrimary', {})
+        secondary = r.get('colorSecondary', {})
+        window    = r.get('colorWindow', {})
+        connection.execute(insert(tbl).values(
+            materialSetID   = r['_key'],
+            description     = r.get('description'),
+            sofFactionName  = r.get('sofFactionName'),
+            sofRaceHint     = r.get('sofRaceHint'),
+            colorHullR      = hull.get('r'),
+            colorHullG      = hull.get('g'),
+            colorHullB      = hull.get('b'),
+            colorHullA      = hull.get('a'),
+            colorPrimaryR   = primary.get('r'),
+            colorPrimaryG   = primary.get('g'),
+            colorPrimaryB   = primary.get('b'),
+            colorPrimaryA   = primary.get('a'),
+            colorSecondaryR = secondary.get('r'),
+            colorSecondaryG = secondary.get('g'),
+            colorSecondaryB = secondary.get('b'),
+            colorSecondaryA = secondary.get('a'),
+            colorWindowR    = window.get('r'),
+            colorWindowG    = window.get('g'),
+            colorWindowB    = window.get('b'),
+            colorWindowA    = window.get('a'),
+        ))
+        count += 1
+    trans.commit()
+    print("    {} rows".format(count))
+
+
 def import_graphics(connection, metadata, sourcePath, language='en'):
     """graphics.jsonl -> eveGraphics"""
     print("Importing graphics")
