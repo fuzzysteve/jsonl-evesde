@@ -60,6 +60,7 @@ def import_types(connection,metadata,sourcePath,language='en'):
                             soundID=typedata.get('soundID'),
                             factionID=typedata.get('factionID'),
                             metaLevel=typedata.get('metaLevel'),
+                            techLevel=typedata.get('techLevel'),
                             shipTreeGroupID=typedata.get('shipTreeGroupID'))
         connection.execute(stmt)
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:

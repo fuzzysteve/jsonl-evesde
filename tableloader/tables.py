@@ -674,6 +674,7 @@ def metadataCreator(schema):
             Column('graphicID', INTEGER()),
             Column('factionID', INTEGER()),
             Column('metaLevel', INTEGER()),
+            Column('techLevel', INTEGER()),
             Column('shipTreeGroupID', INTEGER()),
             schema=schema
 
