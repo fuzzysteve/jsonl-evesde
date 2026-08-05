@@ -206,6 +206,7 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 sdeloader.cfg
+run-conversion.cfg
 eve.db
 .last_build
 .run-conversion.lock

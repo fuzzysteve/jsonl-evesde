@@ -1,0 +1,35 @@
+# run-conversion.cfg — copy to run-conversion.cfg and fill in real values
+# This file is sourced by run-conversion.sh; use KEY=value format (no export, no bash syntax)
+
+# Paths
+VENV_DIR=/home/scripts/jsonl-evesde/.venv
+OUTPUT_DIR=/opt/sde/output
+SDE_DIR=/opt/sde/files
+SQLITE_FILE=/home/scripts/jsonl-evesde/eve.db
+WEB_ROOT=/home/web/fuzzwork/htdocs/dump
+
+# SDE source URLs
+LATEST_URL=https://developers.eveonline.com/static-data/tranquility/latest.jsonl
+DOWNLOAD_URL=https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip
+
+# MySQL
+MYSQL_USER=yaml
+MYSQL_PASS=changeme
+MYSQL_HOST=localhost
+MYSQL_DB=sdeyaml
+MYSQL_EVE_DB=eve
+
+# PostgreSQL
+PG_USER=yaml
+PG_PASS=changeme
+PG_HOST=localhost
+PG_DB=sdeyaml
+PG_SCHEMA_DB=sdeyamlschema
+
+# MSSQL
+MSSQL_SA_PASS=changeme
+MSSQL_USER=evesde
+MSSQL_PASS=changeme
+MSSQL_HOST=localhost
+MSSQL_DB=evesde
+MSSQL_CONTAINER=sqlserver
