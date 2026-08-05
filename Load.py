@@ -429,6 +429,11 @@ def _run_update():
         if trn_table is not None and loader.get('trnTranslations_tcIDs'):
             tcids = loader['trnTranslations_tcIDs']
             connection.execute(delete(trn_table).where(trn_table.c.tcID.in_(tcids)))
+            # SQLAlchemy 2.0 autobegins a transaction on execute(); commit it now
+            # so the loader's own connection.begin() does not raise InvalidRequestError.
+            # The DELETE and the subsequent INSERTs are therefore in separate transactions;
+            # a loader crash after this point requires a full reload to restore these rows.
+            connection.commit()
 
         affected = _resolve_tables(loader['tables'])
         if affected:

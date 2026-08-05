@@ -113,9 +113,15 @@ else
 fi
 
 if [ -n "$PREV_COMMIT" ]; then
-    SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl')
-    export SDE_CHANGED_FILES
-    log "Changed JSONL files: ${SDE_CHANGED_FILES:-none}"
+    SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
+                        | while IFS= read -r f; do basename "$f"; done)
+    if [ -n "$SDE_CHANGED_FILES" ]; then
+        export SDE_CHANGED_FILES
+        log "Changed JSONL files: $SDE_CHANGED_FILES"
+    else
+        unset SDE_CHANGED_FILES
+        log "No JSONL files changed — full load"
+    fi
 else
     unset SDE_CHANGED_FILES
     log "Full load (no previous commit to diff against)"
@@ -277,4 +283,12 @@ md5sum "$WEB_ROOT/latest-sqlite.db.gz"           > "$WEB_ROOT/latest-sqlite.db.g
 md5sum "$WEB_ROOT/latest-postgres.pgdump"        > "$WEB_ROOT/latest-postgres.pgdump.md5sum"
 md5sum "$WEB_ROOT/latest-postgresschema.pgdump"  > "$WEB_ROOT/latest-postgresschema.pgdump.md5sum"
 
-mysqldump "$MYSQL_DB" | mysql "$MYSQL_EVE_DB"
+mysqldump \
+    -h "$MYSQL_HOST" \
+    -u "$MYSQL_USER" \
+    -p"$MYSQL_PASS" \
+    "$MYSQL_DB" | mysql \
+    -h "$MYSQL_HOST" \
+    -u "$MYSQL_USER" \
+    -p"$MYSQL_PASS" \
+    "$MYSQL_EVE_DB"
