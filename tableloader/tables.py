@@ -903,6 +903,8 @@ def metadataCreator(schema):
             Column('radius', FLOAT(precision=53)),
             Column('sunTypeID', INTEGER()),
             Column('securityClass', VARCHAR(length=2)),
+            Column('position2Dx', FLOAT(precision=53)),
+            Column('position2Dy', FLOAT(precision=53)),
             schema=schema
     )
 

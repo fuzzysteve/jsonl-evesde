@@ -207,6 +207,8 @@ def import_map(connection, metadata, sourcePath, language='en'):
             radius        = r.get('radius'),
             sunTypeID     = r.get('starID'),
             securityClass = r.get('securityClass'),
+            position2Dx   = p2d.get('x'),
+            position2Dy   = p2d.get('y'),
         ))
         connection.execute(insert(mapDenormalize).values(
             itemID          = r['_key'],
