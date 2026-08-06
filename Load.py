@@ -399,7 +399,14 @@ LOADERS = [
 
 
 def _resolve_tables(table_names):
-    return [metadata.tables[t] for t in table_names if t in metadata.tables]
+    result = []
+    for name in table_names:
+        tbl = metadata.tables.get(name) or (
+            metadata.tables.get(f"{schema}.{name}") if schema else None
+        )
+        if tbl is not None:
+            result.append(tbl)
+    return result
 
 
 def _run_full():
