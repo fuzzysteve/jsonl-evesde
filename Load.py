@@ -313,18 +313,26 @@ LOADERS = [
     },
     {
         'module_name': 'military',
-        'files': [
-            'militarycampaigns.jsonl', 'militarycampaignobjectives.jsonl',
-            'mercenarytacticaloperations.jsonl', 'sovereigntyupgrades.jsonl',
-        ],
-        'tables': [
-            'milCampaigns', 'milCampaignObjectives', 'milCampaignObjContentTags',
-            'mercenaryTacticalOperations', 'sovereigntyUpgrades',
-        ],
+        'files': ['militarycampaigns.jsonl', 'militarycampaignobjectives.jsonl'],
+        'tables': ['milCampaigns', 'milCampaignObjectives', 'milCampaignObjContentTags'],
         'calls': [
             lambda: military.import_military_campaigns(connection, metadata, sourcePath, language),
             lambda: military.import_military_campaign_objectives(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'mercenary',
+        'files': ['mercenarytacticaloperations.jsonl'],
+        'tables': ['mercenaryTacticalOperations'],
+        'calls': [
             lambda: military.import_mercenary_tactical_operations(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'sovereigntyupgrades',
+        'files': ['sovereigntyupgrades.jsonl'],
+        'tables': ['sovereigntyUpgrades'],
+        'calls': [
             lambda: military.import_sovereignty_upgrades(connection, metadata, sourcePath, language),
         ],
     },
