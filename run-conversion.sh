@@ -281,22 +281,7 @@ md5sum "$WEB_ROOT/latest-sqlite.db.gz"           > "$WEB_ROOT/latest-sqlite.db.g
 md5sum "$WEB_ROOT/latest-postgres.pgdump"        > "$WEB_ROOT/latest-postgres.pgdump.md5sum"
 md5sum "$WEB_ROOT/latest-postgresschema.pgdump"  > "$WEB_ROOT/latest-postgresschema.pgdump.md5sum"
 
-mysql \
-    -h "$MYSQL_HOST" \
-    -u "$MYSQL_USER" \
-    -p"$MYSQL_PASS" \
-    -e "CREATE DATABASE IF NOT EXISTS \`${MYSQL_EVE_DB}\` CHARACTER SET utf8mb4;"
-mysqldump \
-    -h "$MYSQL_HOST" \
-    -u "$MYSQL_USER" \
-    -p"$MYSQL_PASS" \
-    --single-transaction \
-    "$MYSQL_DB" | mysql \
-    -h "$MYSQL_HOST" \
-    -u "$MYSQL_USER" \
-    -p"$MYSQL_PASS" \
-    "$MYSQL_EVE_DB"
-
+mysqldump sdeyaml|mysql eve
 # Record success only after all work completes; any earlier failure under
 # set -e aborts here, leaving BUILD_FILE unchanged so the next run retries.
 echo "$LATEST_BUILD" > "$BUILD_FILE"
