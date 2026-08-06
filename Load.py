@@ -65,26 +65,70 @@ else:
 LOADERS = [
     {
         'module_name': 'types',
-        'files': [
-            'types.jsonl', 'typebonus.jsonl', 'typematerials.jsonl',
-            'typedogma.jsonl', 'groups.jsonl', 'categories.jsonl',
-            'metagroups.jsonl', 'marketgroups.jsonl',
-        ],
-        'tables': [
-            'invTypes', 'invTraits', 'invTypeMaterials',
-            'dgmTypeAttributes', 'dgmTypeEffects',
-            'invGroups', 'invCategories', 'invMetaGroups',
-            'invMetaTypes', 'invMarketGroups',
-        ],
-        'trnTranslations_tcIDs': [6, 7, 8, 14, 15, 33],
+        'files': ['types.jsonl'],
+        'tables': ['invTypes'],
+        'trnTranslations_tcIDs': [8, 33],
         'calls': [
             lambda: types.import_types(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'typebonus',
+        'files': ['typebonus.jsonl'],
+        'tables': ['invTraits'],
+        'calls': [
             lambda: types.import_bonus(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'typematerials',
+        'files': ['typematerials.jsonl'],
+        'tables': ['invTypeMaterials'],
+        'calls': [
             lambda: types.import_materials(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'typedogma',
+        'files': ['typedogma.jsonl'],
+        'tables': ['dgmTypeAttributes', 'dgmTypeEffects'],
+        'calls': [
             lambda: types.import_dogma(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'groups',
+        'files': ['groups.jsonl'],
+        'tables': ['invGroups'],
+        'trnTranslations_tcIDs': [7],
+        'calls': [
             lambda: types.import_groups(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'categories',
+        'files': ['categories.jsonl'],
+        'tables': ['invCategories'],
+        'trnTranslations_tcIDs': [6],
+        'calls': [
             lambda: types.import_categories(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'metagroups',
+        'files': ['metagroups.jsonl'],
+        'tables': ['invMetaGroups', 'invMetaTypes'],
+        'trnTranslations_tcIDs': [15],
+        'calls': [
             lambda: types.import_meta_groups(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'marketgroups',
+        'files': ['marketgroups.jsonl'],
+        'tables': ['invMarketGroups'],
+        'trnTranslations_tcIDs': [14],
+        'calls': [
             lambda: types.import_market_groups(connection, metadata, sourcePath, language),
         ],
     },
@@ -101,16 +145,34 @@ LOADERS = [
         ],
     },
     {
-        'module_name': 'dogma',
-        'files': [
-            'dogmaattributecategories.jsonl', 'dogmaattributes.jsonl',
-            'dogmaeffects.jsonl', 'dogmaunits.jsonl',
-        ],
-        'tables': ['dgmAttributeCategories', 'dgmAttributeTypes', 'dgmEffects', 'eveUnits'],
+        'module_name': 'dogmaattributecategories',
+        'files': ['dogmaattributecategories.jsonl'],
+        'tables': ['dgmAttributeCategories'],
         'calls': [
             lambda: dogma.import_dogma_attribute_categories(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'dogmaattributes',
+        'files': ['dogmaattributes.jsonl'],
+        'tables': ['dgmAttributeTypes'],
+        'calls': [
             lambda: dogma.import_dogma_attributes(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'dogmaeffects',
+        'files': ['dogmaeffects.jsonl'],
+        'tables': ['dgmEffects'],
+        'calls': [
             lambda: dogma.import_dogma_effects(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'dogmaunits',
+        'files': ['dogmaunits.jsonl'],
+        'tables': ['eveUnits'],
+        'calls': [
             lambda: dogma.import_dogma_units(connection, metadata, sourcePath, language),
         ],
     },
@@ -118,7 +180,7 @@ LOADERS = [
         'module_name': 'shipskills',
         'files': [],
         'tables': ['shipSkills'],
-        'depends_on_modules': ['types', 'dogma'],
+        'depends_on_modules': ['types', 'typedogma', 'dogmaattributecategories', 'dogmaattributes', 'dogmaeffects', 'dogmaunits'],
         'calls': [
             lambda: shipskills.buildSkills(connection, database),
         ],
@@ -135,18 +197,28 @@ LOADERS = [
         ],
     },
     {
-        'module_name': 'npccorporations',
-        'files': [
-            'corporationactivities.jsonl', 'npccorporationdivisions.jsonl', 'npccorporations.jsonl',
-        ],
-        'tables': [
-            'crpActivities', 'crpNPCDivisions', 'crpNPCCorporationDivisions',
-            'crpNPCCorporations', 'crpNPCCorporationTrades',
-        ],
-        'trnTranslations_tcIDs': [20, 24],
+        'module_name': 'corporationactivities',
+        'files': ['corporationactivities.jsonl'],
+        'tables': ['crpActivities', 'crpNPCDivisions'],
+        'trnTranslations_tcIDs': [24],
         'calls': [
             lambda: npccorporations.import_corporation_activities(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'npccorporationdivisions',
+        'files': ['npccorporationdivisions.jsonl'],
+        'tables': ['crpNPCCorporationDivisions'],
+        'calls': [
             lambda: npccorporations.import_npc_corporation_divisions(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'npccorporations',
+        'files': ['npccorporations.jsonl'],
+        'tables': ['crpNPCCorporations', 'crpNPCCorporationTrades'],
+        'trnTranslations_tcIDs': [20],
+        'calls': [
             lambda: npccorporations.import_npc_corporations(connection, metadata, sourcePath, language),
         ],
     },
@@ -200,18 +272,46 @@ LOADERS = [
         ],
     },
     {
-        'module_name': 'character',
-        'files': [
-            'ancestries.jsonl', 'bloodlines.jsonl', 'characterattributes.jsonl',
-            'factions.jsonl', 'races.jsonl',
-        ],
-        'tables': ['chrAncestries', 'chrBloodlines', 'chrAttributes', 'chrFactions', 'chrRaces'],
-        'trnTranslations_tcIDs': [11, 12, 16, 19],
+        'module_name': 'ancestries',
+        'files': ['ancestries.jsonl'],
+        'tables': ['chrAncestries'],
+        'trnTranslations_tcIDs': [12],
         'calls': [
             lambda: character.import_ancestries(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'bloodlines',
+        'files': ['bloodlines.jsonl'],
+        'tables': ['chrBloodlines'],
+        'trnTranslations_tcIDs': [11],
+        'calls': [
             lambda: character.import_bloodlines(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'characterattributes',
+        'files': ['characterattributes.jsonl'],
+        'tables': ['chrAttributes'],
+        'calls': [
             lambda: character.import_character_attributes(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'factions',
+        'files': ['factions.jsonl'],
+        'tables': ['chrFactions'],
+        'trnTranslations_tcIDs': [19],
+        'calls': [
             lambda: character.import_factions(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'races',
+        'files': ['races.jsonl'],
+        'tables': ['chrRaces'],
+        'trnTranslations_tcIDs': [16],
+        'calls': [
             lambda: character.import_races(connection, metadata, sourcePath, language),
         ],
     },
@@ -225,21 +325,42 @@ LOADERS = [
     },
     {
         'module_name': 'certificates',
-        'files': ['certificates.jsonl', 'masteries.jsonl'],
-        'tables': ['certCerts', 'certSkills', 'certMasteries'],
+        'files': ['certificates.jsonl'],
+        'tables': ['certCerts', 'certSkills'],
         'trnTranslations_tcIDs': [17],
         'calls': [
             lambda: certificates.import_certificates(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'masteries',
+        'files': ['masteries.jsonl'],
+        'tables': ['certMasteries'],
+        'calls': [
             lambda: certificates.import_masteries(connection, metadata, sourcePath, language),
         ],
     },
     {
-        'module_name': 'skins',
-        'files': ['skinmaterials.jsonl', 'skins.jsonl', 'skinlicenses.jsonl'],
-        'tables': ['skinMaterials', 'skins', 'skinShip', 'skinLicense'],
+        'module_name': 'skinmaterials',
+        'files': ['skinmaterials.jsonl'],
+        'tables': ['skinMaterials'],
         'calls': [
             lambda: skins.import_skin_materials(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skins',
+        'files': ['skins.jsonl'],
+        'tables': ['skins', 'skinShip'],
+        'calls': [
             lambda: skins.import_skins(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinlicenses',
+        'files': ['skinlicenses.jsonl'],
+        'tables': ['skinLicense'],
+        'calls': [
             lambda: skins.import_skin_licenses(connection, metadata, sourcePath, language),
         ],
     },
@@ -279,35 +400,66 @@ LOADERS = [
         ],
     },
     {
-        'module_name': 'missions',
-        'files': ['archetypes.jsonl', 'dungeons.jsonl', 'missions.jsonl', 'epicarcs.jsonl'],
-        'tables': [
-            'dungeonArchetypes', 'mstMissions', 'mstMissionMessages', 'mstMissionExtraStandings',
-            'epicArcs', 'epicArcMissions', 'epicArcMissionNextMissions',
-            'dungeons', 'dungeonAllowedShips',
-        ],
+        'module_name': 'archetypes',
+        'files': ['archetypes.jsonl'],
+        'tables': ['dungeonArchetypes'],
         'calls': [
             lambda: missions.import_archetypes(connection, metadata, sourcePath, language),
-            lambda: missions.import_dungeons(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'missions',
+        'files': ['missions.jsonl'],
+        'tables': ['mstMissions', 'mstMissionMessages', 'mstMissionExtraStandings'],
+        'calls': [
             lambda: missions.import_missions(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'epicarcs',
+        'files': ['epicarcs.jsonl'],
+        'tables': ['epicArcs', 'epicArcMissions', 'epicArcMissionNextMissions'],
+        'calls': [
             lambda: missions.import_epic_arcs(connection, metadata, sourcePath, language),
         ],
     },
     {
-        'module_name': 'shiptree',
-        'files': [
-            'shiptreeelements.jsonl', 'shiptreegroups.jsonl',
-            'shiptreefactions.jsonl', 'typeelements.jsonl',
+        'module_name': 'dungeons',
+        'files': ['dungeons.jsonl'],
+        'tables': ['dungeons', 'dungeonAllowedShips'],
+        'calls': [
+            lambda: missions.import_dungeons(connection, metadata, sourcePath, language),
         ],
-        'tables': [
-            'shipTreeElements', 'shipTreeGroups', 'shipTreeGroupElements',
-            'shipTreeGroupPreReqSkills', 'shipTreeFactions', 'shipTreeFactionElements',
-            'typeElements',
-        ],
+    },
+    {
+        'module_name': 'shiptreeelements',
+        'files': ['shiptreeelements.jsonl'],
+        'tables': ['shipTreeElements'],
         'calls': [
             lambda: shiptree.import_ship_tree_elements(connection, metadata, sourcePath, language),
-            lambda: shiptree.import_ship_tree_factions(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'shiptreegroups',
+        'files': ['shiptreegroups.jsonl'],
+        'tables': ['shipTreeGroups', 'shipTreeGroupElements', 'shipTreeGroupPreReqSkills'],
+        'calls': [
             lambda: shiptree.import_ship_tree_groups(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'shiptreefactions',
+        'files': ['shiptreefactions.jsonl'],
+        'tables': ['shipTreeFactions', 'shipTreeFactionElements'],
+        'calls': [
+            lambda: shiptree.import_ship_tree_factions(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'typeelements',
+        'files': ['typeelements.jsonl'],
+        'tables': ['typeElements'],
+        'calls': [
             lambda: shiptree.import_type_elements(connection, metadata, sourcePath, language),
         ],
     },
@@ -337,29 +489,74 @@ LOADERS = [
         ],
     },
     {
-        'module_name': 'skinr',
-        'files': [
-            'skinrcomponentcategories.jsonl', 'skinrcomponentrarities.jsonl',
-            'skinrcomponentpointvalues.jsonl', 'skinrcomponents.jsonl',
-            'skinrslotcategories.jsonl', 'skinrslotnames.jsonl', 'skinrslots.jsonl',
-            'skinrslotconfigurations.jsonl', 'skinrtierthresholds.jsonl',
-        ],
-        'tables': [
-            'skinrComponentCategories', 'skinrComponentRarities', 'skinrComponentPointValues',
-            'skinrComponents', 'skinrComponentTypes',
-            'skinrSlotCategories', 'skinrSlotNames', 'skinrSlots', 'skinrSlotAllowedCategories',
-            'skinrSlotConfigurations', 'skinrSlotConfigurationSlots', 'skinrSlotConfigurationShips',
-            'skinrTierThresholds',
-        ],
+        'module_name': 'skinrcomponentcategories',
+        'files': ['skinrcomponentcategories.jsonl'],
+        'tables': ['skinrComponentCategories'],
         'calls': [
             lambda: skinr.import_skinr_component_categories(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrcomponentrarities',
+        'files': ['skinrcomponentrarities.jsonl'],
+        'tables': ['skinrComponentRarities'],
+        'calls': [
             lambda: skinr.import_skinr_component_rarities(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrcomponentpointvalues',
+        'files': ['skinrcomponentpointvalues.jsonl'],
+        'tables': ['skinrComponentPointValues'],
+        'calls': [
             lambda: skinr.import_skinr_component_point_values(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrcomponents',
+        'files': ['skinrcomponents.jsonl'],
+        'tables': ['skinrComponents', 'skinrComponentTypes'],
+        'calls': [
             lambda: skinr.import_skinr_components(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrslotcategories',
+        'files': ['skinrslotcategories.jsonl'],
+        'tables': ['skinrSlotCategories'],
+        'calls': [
             lambda: skinr.import_skinr_slot_categories(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrslotnames',
+        'files': ['skinrslotnames.jsonl'],
+        'tables': ['skinrSlotNames'],
+        'calls': [
             lambda: skinr.import_skinr_slot_names(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrslots',
+        'files': ['skinrslots.jsonl'],
+        'tables': ['skinrSlots', 'skinrSlotAllowedCategories'],
+        'calls': [
             lambda: skinr.import_skinr_slots(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrslotconfigurations',
+        'files': ['skinrslotconfigurations.jsonl'],
+        'tables': ['skinrSlotConfigurations', 'skinrSlotConfigurationSlots', 'skinrSlotConfigurationShips'],
+        'calls': [
             lambda: skinr.import_skinr_slot_configurations(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skinrtierthresholds',
+        'files': ['skinrtierthresholds.jsonl'],
+        'tables': ['skinrTierThresholds'],
+        'calls': [
             lambda: skinr.import_skinr_tier_thresholds(connection, metadata, sourcePath, language),
         ],
     },
