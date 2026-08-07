@@ -61,7 +61,8 @@ def import_types(connection,metadata,sourcePath,language='en'):
                             factionID=typedata.get('factionID'),
                             metaLevel=typedata.get('metaLevel'),
                             techLevel=typedata.get('techLevel'),
-                            shipTreeGroupID=typedata.get('shipTreeGroupID'))
+                            shipTreeGroupID=typedata.get('shipTreeGroupID'),
+                            packagedVolume=typedata.get('packagedVolume'))
         connection.execute(stmt)
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:
             stmt=insert(invMetaTypes).values(typeID=typedata['_key'],metaGroupID=typedata.get('metaGroupID'),parentTypeID=typedata.get('variationParentTypeID'))
