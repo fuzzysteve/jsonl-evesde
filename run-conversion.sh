@@ -287,6 +287,9 @@ mysqldump sdeyaml|mysql eve
 echo "$LATEST_BUILD" > "$BUILD_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
 
+log "=== Cleaning up old builds ==="
+python3 "$SCRIPT_DIR/cleanup_builds.py" "$WEB_ROOT"
+
 if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     PAYLOAD=$(envsubst '$LATEST_BUILD $WEB_ROOT_URL' < "$SCRIPT_DIR/discord-notification.json")
     curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
