@@ -45,8 +45,8 @@ def import_types(connection,metadata,sourcePath,language='en'):
         typedata = json.loads(json_str)
         stmt=insert(invTypes).values(typeID=typedata['_key'],
                             groupID=typedata.get('groupID',0),
-                            typeName=_trunc(typedata.get('name',{}).get(language,'')),
-                            description=typedata.get('description',{}).get(language,''),
+                            typeName=_trunc((typedata.get('name') or {}).get(language,'')),
+                            description=(typedata.get('description') or {}).get(language,''),
                             mass=typedata.get('mass',0),
                             volume=typedata.get('volume',0),
                             capacity=typedata.get('capacity',0),
@@ -67,11 +67,11 @@ def import_types(connection,metadata,sourcePath,language='en'):
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:
             stmt=insert(invMetaTypes).values(typeID=typedata['_key'],metaGroupID=typedata.get('metaGroupID'),parentTypeID=typedata.get('variationParentTypeID'))
             connection.execute(stmt)
-        if 'name' in typedata:
+        if isinstance(typedata.get('name'), dict):
             for lang in typedata['name']:
                 stmt=insert(trnTranslations).values(tcID=8,keyID=typedata['_key'],languageID=lang,text=typedata['name'][lang])
                 connection.execute(stmt)
-        if 'description' in typedata:
+        if isinstance(typedata.get('description'), dict):
             for lang in typedata['description']:
                 stmt=insert(trnTranslations).values(tcID=33,keyID=typedata['_key'],languageID=lang,text=typedata['description'][lang])
                 connection.execute(stmt)

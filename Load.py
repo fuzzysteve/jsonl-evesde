@@ -66,7 +66,7 @@ LOADERS = [
     {
         'module_name': 'types',
         'files': ['types.jsonl'],
-        'tables': ['invTypes'],
+        'tables': ['invTypes', 'invMetaTypes'],
         'trnTranslations_tcIDs': [8, 33],
         'calls': [
             lambda: types.import_types(connection, metadata, sourcePath, language),
@@ -117,7 +117,7 @@ LOADERS = [
     {
         'module_name': 'metagroups',
         'files': ['metagroups.jsonl'],
-        'tables': ['invMetaGroups', 'invMetaTypes'],
+        'tables': ['invMetaGroups'],
         'trnTranslations_tcIDs': [15],
         'calls': [
             lambda: types.import_meta_groups(connection, metadata, sourcePath, language),
@@ -199,8 +199,7 @@ LOADERS = [
     {
         'module_name': 'corporationactivities',
         'files': ['corporationactivities.jsonl'],
-        'tables': ['crpActivities', 'crpNPCDivisions'],
-        'trnTranslations_tcIDs': [24],
+        'tables': ['crpActivities'],
         'calls': [
             lambda: npccorporations.import_corporation_activities(connection, metadata, sourcePath, language),
         ],
@@ -208,7 +207,8 @@ LOADERS = [
     {
         'module_name': 'npccorporationdivisions',
         'files': ['npccorporationdivisions.jsonl'],
-        'tables': ['crpNPCCorporationDivisions'],
+        'tables': ['crpNPCDivisions'],
+        'trnTranslations_tcIDs': [24],
         'calls': [
             lambda: npccorporations.import_npc_corporation_divisions(connection, metadata, sourcePath, language),
         ],
@@ -216,7 +216,7 @@ LOADERS = [
     {
         'module_name': 'npccorporations',
         'files': ['npccorporations.jsonl'],
-        'tables': ['crpNPCCorporations', 'crpNPCCorporationTrades'],
+        'tables': ['crpNPCCorporations', 'crpNPCCorporationDivisions', 'crpNPCCorporationTrades'],
         'trnTranslations_tcIDs': [20],
         'calls': [
             lambda: npccorporations.import_npc_corporations(connection, metadata, sourcePath, language),
@@ -626,7 +626,9 @@ def _run_full():
 
 
 def _run_update():
-    trn_table = metadata.tables.get('trnTranslations')
+    trn_table = metadata.tables.get('trnTranslations') or (
+        metadata.tables.get(f"{schema}.trnTranslations") if schema else None
+    )
     ran_modules = set()
 
     for loader in LOADERS:

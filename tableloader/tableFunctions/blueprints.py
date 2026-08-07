@@ -72,7 +72,7 @@ def import_blueprints(connection,metadata,sourcePath,language='en'):
                                                 skillID=skill['typeID'],
                                                 level=skill['level'])
                         connection.execute(stmt)
-            except:
-                print('{} has a bad skill'.format(blueprint))
+            except Exception:
+                print('{} has a bad skill'.format(blueprintid))
 
     trans.commit()

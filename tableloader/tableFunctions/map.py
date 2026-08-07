@@ -284,7 +284,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         if isinstance(unique, dict) and unique.get(language):
             itemName = unique.get(language) or unique.get('en')
         else:
-            itemName = '{} {}'.format(sysName, r.get('celestialIndex'))
+            itemName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
         connection.execute(insert(mapDenormalize).values(
             itemID          = r['_key'],
             typeID          = r.get('typeID'),
@@ -324,7 +324,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             heightMap2   = attrs.get('heightMap2'),
             shaderPreset = attrs.get('shaderPreset'),
         ))
-        orbitName = '{} {}'.format(sysName, r.get('celestialIndex'))
+        orbitName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
         itemName  = '{} - Moon {}'.format(orbitName, r.get('orbitIndex'))
         connection.execute(insert(mapDenormalize).values(
             itemID          = r['_key'],
@@ -363,7 +363,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         if isinstance(unique, dict) and unique.get(language):
             itemName = unique.get(language) or unique.get('en')
         else:
-            orbitName = '{} {}'.format(sysName, r.get('celestialIndex'))
+            orbitName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
             itemName  = '{} - Asteroid Belt {}'.format(orbitName, r.get('orbitIndex'))
         connection.execute(insert(mapDenormalize).values(
             itemID          = r['_key'],
