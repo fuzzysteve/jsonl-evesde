@@ -7,12 +7,11 @@ Enforce build retention policy in WEB_ROOT:
 import os
 import re
 import shutil
-import sys
 from collections import defaultdict
 
 KEEP_RECENT = 10
 
-web_root = sys.argv[1]
+web_root = '/home/web/fuzzwork/htdocs/dump'
 
 entries = []
 for name in os.listdir(web_root):

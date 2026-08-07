@@ -288,7 +288,7 @@ echo "$LATEST_BUILD" > "$BUILD_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
 
 log "=== Cleaning up old builds ==="
-python3 "$SCRIPT_DIR/cleanup_builds.py" "$WEB_ROOT"
+python3 "$SCRIPT_DIR/cleanup_builds.py"
 
 if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     PAYLOAD=$(envsubst '$LATEST_BUILD $WEB_ROOT_URL' < "$SCRIPT_DIR/discord-notification.json")
