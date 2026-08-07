@@ -40,6 +40,10 @@ for items in monthly.values():
 
 for _, name, full in entries:
     if name not in keep:
+        assert os.path.dirname(os.path.realpath(full)) == os.path.realpath(web_root), \
+            f"Safety check failed: {full!r} is not a direct child of {web_root!r}"
+        assert re.match(r'^\d+_(\d{8})_(\d{6})$', name), \
+            f"Safety check failed: {name!r} does not match build-directory pattern"
         print(f"Removing old build: {name}")
         shutil.rmtree(full)
 
