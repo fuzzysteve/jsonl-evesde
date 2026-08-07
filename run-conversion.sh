@@ -286,3 +286,10 @@ mysqldump sdeyaml|mysql eve
 # set -e aborts here, leaving BUILD_FILE unchanged so the next run retries.
 echo "$LATEST_BUILD" > "$BUILD_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
+
+if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+    PAYLOAD=$(envsubst '$LATEST_BUILD $WEB_ROOT_URL' < "$SCRIPT_DIR/discord-notification.json")
+    curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d "$PAYLOAD"
+fi

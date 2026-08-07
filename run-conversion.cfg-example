@@ -33,3 +33,8 @@ MSSQL_PASS=changeme
 MSSQL_HOST=localhost
 MSSQL_DB=evesde
 MSSQL_CONTAINER=sqlserver
+
+# Discord webhook (optional — leave blank to disable notifications)
+DISCORD_WEBHOOK_URL=
+# Public base URL for download links in Discord notifications (no trailing slash)
+WEB_ROOT_URL=https://example.com/dump
