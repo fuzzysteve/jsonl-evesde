@@ -1573,7 +1573,7 @@ def metadataCreator(schema):
     )
 
     milCampaigns = Table('milCampaigns', metadata,
-        Column('campaignID',       VARCHAR(length=36), primary_key=True, nullable=False),
+        Column('campaignID',       Uuid(as_uuid=False), primary_key=True, nullable=False),
         Column('title',            VARCHAR(length=255), nullable=True),
         Column('subtitle',         UnicodeText(),       nullable=True),
         Column('factionID',        INTEGER(),           nullable=True),
@@ -1586,8 +1586,8 @@ def metadataCreator(schema):
     )
 
     milCampaignObjectives = Table('milCampaignObjectives', metadata,
-        Column('objectiveID',                  VARCHAR(length=36), primary_key=True, nullable=False),
-        Column('campaignID',                   VARCHAR(length=36), nullable=True, index=True),
+        Column('objectiveID',                  Uuid(as_uuid=False), primary_key=True, nullable=False),
+        Column('campaignID',                   Uuid(as_uuid=False), nullable=True, index=True),
         Column('title',                        VARCHAR(length=255), nullable=True),
         Column('subtitle',                     UnicodeText(),       nullable=True),
         Column('careerPath',                   VARCHAR(length=100), nullable=True),
@@ -1611,7 +1611,7 @@ def metadataCreator(schema):
     )
 
     milCampaignObjContentTags = Table('milCampaignObjContentTags', metadata,
-        Column('objectiveID', VARCHAR(length=36), primary_key=True, nullable=False),
+        Column('objectiveID', Uuid(as_uuid=False), primary_key=True, nullable=False),
         Column('tag',         VARCHAR(length=100), primary_key=True, nullable=False),
         schema=schema
     )
