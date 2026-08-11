@@ -3,6 +3,7 @@
 ## see http://code.google.com/p/sqlautocode/
 
 from sqlalchemy import *
+from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
 
 
