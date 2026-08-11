@@ -606,9 +606,9 @@ LOADERS = [
 def _resolve_tables(table_names):
     result = []
     for name in table_names:
-        tbl = metadata.tables.get(name) or (
-            metadata.tables.get(f"{schema}.{name}") if schema else None
-        )
+        tbl = metadata.tables.get(name)
+        if tbl is None and schema:
+            tbl = metadata.tables.get(f"{schema}.{name}")
         if tbl is not None:
             result.append(tbl)
     return result
