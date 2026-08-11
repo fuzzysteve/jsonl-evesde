@@ -23,6 +23,16 @@ for r in _jsonl(sourcePath, 'types.jsonl'):
     typeID = r['_key']
 ```
 
+### Logging
+
+Every loader module has a local `_log(msg)` helper that prepends a `[HH:MM:SS]` timestamp, matching the shell pipeline's `log()` format. Use it instead of bare `print()`:
+
+```python
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+```
+
 ### Localised strings
 
 `_en(d, language)` (or inline `d.get(language)`) extracts a string from a language-keyed dict. Some loaders write all languages to `trnTranslations`; others just take the `en` value.
@@ -71,6 +81,12 @@ Multiple modules write to `trnTranslations` using different `tcID` values. In up
 | 11, 12, 16, 19 | character |
 | 17 | certificates |
 | 20, 24 | npccorporations |
+| 35, 36 | accounting |
+| 37, 38, 39 | corporations |
+| 40, 41 | fighters |
+| 42, 43, 44, 45, 46, 47 | schools |
+| 48 | notifications |
+| 49, 50 | industry |
 
 When adding a loader that writes to `trnTranslations`, confirm the tcID isn't already used by another module and add it to `trnTranslations_tcIDs` in the LOADERS entry.
 

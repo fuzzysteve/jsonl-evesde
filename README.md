@@ -95,9 +95,12 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 Run it manually:
 
 ```bash
-./run-conversion.sh           # skips if already on latest build
-./run-conversion.sh --force   # runs even if build number hasn't changed
+./run-conversion.sh             # skips if already on latest build
+./run-conversion.sh --force     # runs even if build number hasn't changed
+./run-conversion.sh --reprocess # skips download; reloads from the last committed SDE
 ```
+
+`--reprocess` is useful after adding new loaders or fixing a bug — it re-runs the full load pipeline against the SDE files already on disk, using `git diff HEAD~1` to detect which JSONL files changed in the last commit (or a full load if there is no previous commit).
 
 The script uses `flock` to prevent concurrent runs. It expects `run-conversion.cfg` to exist.
 
@@ -130,17 +133,40 @@ run-conversion.sh              # automated download → load → publish pipelin
 run-conversion.cfg             # pipeline credentials/paths (git-ignored)
 run-conversion.cfg-example     # template
 export_csv.py                  # exports tables to CSV (called by run-conversion.sh)
+cleanup_builds.py              # removes old web-root build directories
 tableloader/
   tables.py                    # SQLAlchemy Table definitions (all schemas)
   tableFunctions/
     __init__.py                # __all__ listing of all loader modules
-    types.py                   # invTypes, invGroups, invCategories, ...
-    map.py                     # mapSolarSystems, mapDenormalize, staStations, ...
-    blueprints.py              # industryBlueprints, industryActivity, ...
-    dogma.py                   # dgmAttributeTypes, dgmEffects, eveUnits, ...
+    types.py                   # invTypes, invGroups, invCategories, invMetaGroups, invMarketGroups
+    map.py                     # mapSolarSystems, mapDenormalize, staStations, mapJumps, ...
+    blueprints.py              # industryBlueprints, industryActivities, ...
+    dogma.py                   # dgmAttributeTypes, dgmEffects, dgmUnits, ...
     graphics.py                # graphicMaterialSets, eveGraphics, eveIcons
     skinr.py                   # skinrComponents, skinrSlots, skinrSlotConfigurations, ...
-    ...                        # one file per domain
+    character.py               # chrAncestries, chrBloodlines, chrRaces, chrFactions, ...
+    certificates.py            # certCerts, certSkills, certMasteries
+    npccorporations.py         # crpNPCCorporations, crpActivities, crpNPCDivisions, ...
+    npccharacters.py           # agtAgents, npcCharacters
+    agents.py                  # agtAgentTypes, agtAgentsInSpace
+    industry.py                # ramActivities, ramAssemblyLines, indModifierSources,
+                               #   indTargetFilters, staOperations, staStandingsRestrictions, ...
+    corporations.py            # crpRoleGroups, crpRoles, crpRoleRoleGroups
+    accounting.py              # acctEntryTypes
+    fighters.py                # fighterAbilities, fighterAbilitiesByType
+    schools.py                 # chrSchools, chrSchoolMap, skillPlans, expertSystems, ...
+    typeeffects.py             # aplProximityEffects, proximityTraps, linkWithShip,
+                               #   sysDbuffEmitters, sysWideEffects, metenoxMoonDrills
+    notifications.py           # ntfTypes
+    skins.py                   # skinMaterials, skins, skinLicenses
+    shiptree.py                # shipTreeElements, shipTreeGroups, shipTreeFactions
+    military.py                # militaryCampaigns, militaryCampaignObjectives, ...
+    missions.py                # agtMissions, dungeons, epicArcs, ...
+    planetary.py               # planetResources, planetSchematics
+    shipskills.py              # (derived) dspShipSkills — built from types + dogma
+    invNames.py                # (derived) invNames, invUniqueNames — built from mapDenormalize
+    ...                        # plus cloneGrades, characterTitles, translationlanguages,
+                               #   contraband, controltower, compressible, typelist, freelance
 ```
 
 ## License
