@@ -225,3 +225,22 @@ def import_skinr_tier_thresholds(connection, metadata, sourcePath, language='en'
             count += 1
     trans.commit()
     print("    {} rows".format(count))
+
+
+def import_skinr_slots_to_materials(connection, metadata, sourcePath, language='en'):
+    """skinrSlotsToMaterials.jsonl -> skinrSkinSlotToMaterial"""
+    print("Importing skinrSlotsToMaterials")
+    tbl = Table('skinrSkinSlotToMaterial', metadata)
+    trans = connection.begin()
+    count = 0
+    for r in _jsonl(sourcePath, 'skinrSlotsToMaterials.jsonl'):
+        type_id = r['_key']
+        for entry in r.get('_value') or []:
+            connection.execute(insert(tbl).values(
+                typeID     = type_id,
+                slotID     = entry['slotID'],
+                materialID = entry['materialID'],
+            ))
+            count += 1
+    trans.commit()
+    print("    {} rows".format(count))

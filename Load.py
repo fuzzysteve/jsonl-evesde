@@ -600,6 +600,214 @@ LOADERS = [
             lambda: controltower.import_control_tower_resources(connection, metadata, sourcePath, language),
         ],
     },
+    # --- industry ---
+    {
+        'module_name': 'industryactivities',
+        'files': ['industryactivities.jsonl'],
+        'tables': ['ramActivities'],
+        'calls': [
+            lambda: industry.import_industry_activities(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'industryassemblylines',
+        'files': ['industryassemblylines.jsonl'],
+        'tables': ['ramAssemblyLines', 'ramAssemblyLineTypeDetailPerGroup'],
+        'calls': [
+            lambda: industry.import_industry_assembly_lines(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'industryinstallationtypes',
+        'files': ['industryinstallationtypes.jsonl'],
+        'tables': ['ramInstallationTypeContents'],
+        'calls': [
+            lambda: industry.import_industry_installation_types(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'industrymodifiersources',
+        'files': ['industrymodifiersources.jsonl'],
+        'tables': ['indModifierSources'],
+        'calls': [
+            lambda: industry.import_industry_modifier_sources(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'industrytargetfilters',
+        'files': ['industrytargetfilters.jsonl'],
+        'tables': ['indTargetFilters', 'indTargetFilterCategories', 'indTargetFilterGroups'],
+        'calls': [
+            lambda: industry.import_industry_target_filters(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'stationoperations',
+        'files': ['stationoperations.jsonl'],
+        'tables': ['staOperations', 'staOperationServices', 'staOperationTypes'],
+        'trnTranslations_tcIDs': [49, 50],
+        'calls': [
+            lambda: industry.import_station_operations(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'stationstandingsrestrictions',
+        'files': ['stationstandingsrestrictions.jsonl'],
+        'tables': ['staStandingsRestrictions'],
+        'calls': [
+            lambda: industry.import_station_standings_restrictions(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- corporations ---
+    {
+        'module_name': 'corporationrolegroups',
+        'files': ['corporationrolegroups.jsonl'],
+        'tables': ['crpRoleGroups'],
+        'trnTranslations_tcIDs': [37],
+        'calls': [
+            lambda: corporations.import_corporation_role_groups(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'corporationroles',
+        'files': ['corporationroles.jsonl'],
+        'tables': ['crpRoles', 'crpRoleRoleGroups'],
+        'trnTranslations_tcIDs': [38, 39],
+        'calls': [
+            lambda: corporations.import_corporation_roles(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- accounting ---
+    {
+        'module_name': 'accountingentrytypes',
+        'files': ['accountingentrytypes.jsonl'],
+        'tables': ['acctEntryTypes'],
+        'trnTranslations_tcIDs': [35, 36],
+        'calls': [
+            lambda: accounting.import_accounting_entry_types(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- fighters ---
+    {
+        'module_name': 'fighterabilities',
+        'files': ['fighterabilities.jsonl'],
+        'tables': ['fighterAbilities'],
+        'trnTranslations_tcIDs': [40, 41],
+        'calls': [
+            lambda: fighters.import_fighter_abilities(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'fighterabilitiesbytype',
+        'files': ['fighterabilitiesbytype.jsonl'],
+        'tables': ['fighterAbilitiesByType'],
+        'calls': [
+            lambda: fighters.import_fighter_abilities_by_type(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- schools / career ---
+    {
+        'module_name': 'schools',
+        'files': ['schools.jsonl'],
+        'tables': ['chrSchools', 'chrSchoolCareerAgents', 'chrSchoolStartingStations'],
+        'trnTranslations_tcIDs': [42, 43, 44, 45],
+        'calls': [
+            lambda: schools.import_schools(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'schoolmap',
+        'files': ['schoolmap.jsonl'],
+        'tables': ['chrSchoolMap'],
+        'calls': [
+            lambda: schools.import_school_map(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'skillplans',
+        'files': ['skillplans.jsonl'],
+        'tables': ['skillPlans', 'skillPlanMilestones', 'skillPlanSkillRequirements'],
+        'trnTranslations_tcIDs': [46, 47],
+        'calls': [
+            lambda: schools.import_skill_plans(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'expertsystems',
+        'files': ['expertsystems.jsonl'],
+        'tables': ['expertSystems', 'expertSystemSkillsGranted'],
+        'calls': [
+            lambda: schools.import_expert_systems(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- type effects / system mechanics ---
+    {
+        'module_name': 'appliedproximityeffects',
+        'files': ['appliedproximityeffects.jsonl'],
+        'tables': ['aplProximityEffects', 'aplProximityEffectDbuffs'],
+        'calls': [
+            lambda: typeeffects.import_applied_proximity_effects(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'proximitytrap',
+        'files': ['proximitytrap.jsonl'],
+        'tables': ['proximityTraps'],
+        'calls': [
+            lambda: typeeffects.import_proximity_traps(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'linkwithship',
+        'files': ['linkwithship.jsonl'],
+        'tables': ['linkWithShip', 'linkWithShipDbuffs'],
+        'calls': [
+            lambda: typeeffects.import_link_with_ship(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'systemdbuffemitters',
+        'files': ['systemdbuffemitters.jsonl'],
+        'tables': ['sysDbuffEmitters', 'sysDbuffEmitterDbuffs'],
+        'calls': [
+            lambda: typeeffects.import_system_dbuff_emitters(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'systemwideeffects',
+        'files': ['systemwideeffects.jsonl'],
+        'tables': ['sysWideEffects', 'sysWideEffectDbuffs'],
+        'calls': [
+            lambda: typeeffects.import_system_wide_effects(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
+        'module_name': 'metenoxmoondrill',
+        'files': ['metenoxmoondrill.jsonl'],
+        'tables': ['metenoxMoonDrills'],
+        'calls': [
+            lambda: typeeffects.import_metenox_moon_drills(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- notifications ---
+    {
+        'module_name': 'notificationtypes',
+        'files': ['notificationtypes.jsonl'],
+        'tables': ['ntfTypes'],
+        'trnTranslations_tcIDs': [48],
+        'calls': [
+            lambda: notifications.import_notification_types(connection, metadata, sourcePath, language),
+        ],
+    },
+    # --- skinr extension ---
+    {
+        'module_name': 'skinrslotstomaterials',
+        'files': ['skinrslotstomaterials.jsonl'],
+        'tables': ['skinrSkinSlotToMaterial'],
+        'calls': [
+            lambda: skinr.import_skinr_slots_to_materials(connection, metadata, sourcePath, language),
+        ],
+    },
 ]
 
 
@@ -629,6 +837,9 @@ def _run_update():
     trn_table = metadata.tables.get('trnTranslations')
     if trn_table is None and schema:
         trn_table = metadata.tables.get(f"{schema}.trnTranslations")
+    trn_cols_table = metadata.tables.get('trnTranslationColumns')
+    if trn_cols_table is None and schema:
+        trn_cols_table = metadata.tables.get(f"{schema}.trnTranslationColumns")
     ran_modules = set()
 
     for loader in LOADERS:
@@ -640,9 +851,12 @@ def _run_update():
 
         print(f"Update: reloading module '{loader['module_name']}'")
 
-        if trn_table is not None and loader.get('trnTranslations_tcIDs'):
+        if loader.get('trnTranslations_tcIDs'):
             tcids = loader['trnTranslations_tcIDs']
-            connection.execute(delete(trn_table).where(trn_table.c.tcID.in_(tcids)))
+            if trn_table is not None:
+                connection.execute(delete(trn_table).where(trn_table.c.tcID.in_(tcids)))
+            if trn_cols_table is not None:
+                connection.execute(delete(trn_cols_table).where(trn_cols_table.c.tcID.in_(tcids)))
             # SQLAlchemy 2.0 autobegins a transaction on execute(); commit it now
             # so the loader's own connection.begin() does not raise InvalidRequestError.
             # The DELETE and the subsequent INSERTs are therefore in separate transactions;
