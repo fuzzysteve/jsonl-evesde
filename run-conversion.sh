@@ -20,9 +20,13 @@ source "$CONFIG_FILE"
 # Usage
 # ---------------------------------------------------------------------------
 FORCE=0
-if [[ "${1:-}" == "--force" ]]; then
-    FORCE=1
-fi
+REPROCESS=0
+for arg in "$@"; do
+    case "$arg" in
+        --force)      FORCE=1 ;;
+        --reprocess)  REPROCESS=1 ;;
+    esac
+done
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
@@ -48,12 +52,42 @@ source "$VENV_DIR/bin/activate"
 
 mkdir -p "$OUTPUT_DIR" "$SDE_DIR"
 
-# ---------------------------------------------------------------------------
-# Check for new SDE version
-# ---------------------------------------------------------------------------
-log "Checking latest SDE build number..."
-LATEST_JSON=$(curl -sf "$LATEST_URL")
-LATEST_BUILD=$(echo "$LATEST_JSON" | python3 -c "
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+if [ "$REPROCESS" -eq 1 ]; then
+    # ---------------------------------------------------------------------------
+    # Reprocess mode: skip download; use existing SDE files from last run
+    # ---------------------------------------------------------------------------
+    if [ ! -f "$BUILD_FILE" ]; then
+        log "ERROR: No previous build recorded in $BUILD_FILE; cannot reprocess."
+        exit 1
+    fi
+    LATEST_BUILD=$(cat "$BUILD_FILE")
+    log "Reprocessing build $LATEST_BUILD from existing SDE at $SDE_DIR"
+    cd "$SDE_DIR"
+    PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+    if [ -n "$PREV_COMMIT" ]; then
+        SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
+                            | while IFS= read -r f; do basename "$f"; done)
+        if [ -n "$SDE_CHANGED_FILES" ]; then
+            export SDE_CHANGED_FILES
+            log "Changed JSONL files: $SDE_CHANGED_FILES"
+        else
+            unset SDE_CHANGED_FILES
+            log "No JSONL files changed in last commit — full load"
+        fi
+    else
+        unset SDE_CHANGED_FILES
+        log "No previous commit — full load"
+    fi
+    cd "$SCRIPT_DIR"
+else
+    # ---------------------------------------------------------------------------
+    # Check for new SDE version
+    # ---------------------------------------------------------------------------
+    log "Checking latest SDE build number..."
+    LATEST_JSON=$(curl -sf "$LATEST_URL")
+    LATEST_BUILD=$(echo "$LATEST_JSON" | python3 -c "
 import json, sys
 for line in sys.stdin:
     r = json.loads(line)
@@ -62,71 +96,70 @@ for line in sys.stdin:
         break
 ")
 
-if [ -z "$LATEST_BUILD" ]; then
-    log "ERROR: Could not determine latest build number"
-    exit 1
-fi
+    if [ -z "$LATEST_BUILD" ]; then
+        log "ERROR: Could not determine latest build number"
+        exit 1
+    fi
 
-log "Latest build: $LATEST_BUILD"
+    log "Latest build: $LATEST_BUILD"
 
-LAST_BUILD=""
-if [ -f "$BUILD_FILE" ]; then
-    LAST_BUILD=$(cat "$BUILD_FILE")
-fi
+    LAST_BUILD=""
+    if [ -f "$BUILD_FILE" ]; then
+        LAST_BUILD=$(cat "$BUILD_FILE")
+    fi
 
-if [ "$LATEST_BUILD" = "$LAST_BUILD" ] && [ "$FORCE" -eq 0 ]; then
-    log "Already on build $LATEST_BUILD — nothing to do. Use --force to run anyway."
-    exit 0
-fi
+    if [ "$LATEST_BUILD" = "$LAST_BUILD" ] && [ "$FORCE" -eq 0 ]; then
+        log "Already on build $LATEST_BUILD — nothing to do. Use --force to run anyway."
+        exit 0
+    fi
 
-if [ "$FORCE" -eq 1 ] && [ "$LATEST_BUILD" = "$LAST_BUILD" ]; then
-    log "Build $LATEST_BUILD already processed but --force specified, continuing."
-else
-    log "New build available: $LATEST_BUILD (was: ${LAST_BUILD:-none})"
-fi
+    if [ "$FORCE" -eq 1 ] && [ "$LATEST_BUILD" = "$LAST_BUILD" ]; then
+        log "Build $LATEST_BUILD already processed but --force specified, continuing."
+    else
+        log "New build available: $LATEST_BUILD (was: ${LAST_BUILD:-none})"
+    fi
 
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    # ---------------------------------------------------------------------------
+    # Download and extract new SDE
+    # ---------------------------------------------------------------------------
+    log "Downloading SDE build $LATEST_BUILD..."
+    ZIPFILE="/tmp/evesde_${LATEST_BUILD}.zip"
+    curl -f -L -o "$ZIPFILE" "$DOWNLOAD_URL"
+    log "Extracting to $SDE_DIR..."
+    rm -rf "${SDE_DIR:?}"/*
+    unzip -q "$ZIPFILE" -d "$SDE_DIR"
+    rm -f "$ZIPFILE"
+    log "SDE extracted"
 
-# ---------------------------------------------------------------------------
-# Download and extract new SDE
-# ---------------------------------------------------------------------------
-log "Downloading SDE build $LATEST_BUILD..."
-ZIPFILE="/tmp/evesde_${LATEST_BUILD}.zip"
-curl -f -L -o "$ZIPFILE" "$DOWNLOAD_URL"
-log "Extracting to $SDE_DIR..."
-rm -rf "${SDE_DIR:?}"/*
-unzip -q "$ZIPFILE" -d "$SDE_DIR"
-rm -f "$ZIPFILE"
-log "SDE extracted"
+    # ---------------------------------------------------------------------------
+    # Commit new SDE files to local git repo; detect what changed
+    # ---------------------------------------------------------------------------
+    cd "$SDE_DIR"
+    git add -A
+    if git diff --cached --quiet; then
+        log "No new SDE file changes to commit"
+        PREV_COMMIT=""
+    else
+        git commit -m "$LATEST_BUILD"
+        PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "")
+    fi
 
-# ---------------------------------------------------------------------------
-# Commit new SDE files to local git repo; detect what changed
-# ---------------------------------------------------------------------------
-cd "$SDE_DIR"
-git add -A
-if git diff --cached --quiet; then
-    log "No new SDE file changes to commit"
-    PREV_COMMIT=""
-else
-    git commit -m "$LATEST_BUILD"
-    PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "")
-fi
-
-if [ -n "$PREV_COMMIT" ]; then
-    SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
-                        | while IFS= read -r f; do basename "$f"; done)
-    if [ -n "$SDE_CHANGED_FILES" ]; then
-        export SDE_CHANGED_FILES
-        log "Changed JSONL files: $SDE_CHANGED_FILES"
+    if [ -n "$PREV_COMMIT" ]; then
+        SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
+                            | while IFS= read -r f; do basename "$f"; done)
+        if [ -n "$SDE_CHANGED_FILES" ]; then
+            export SDE_CHANGED_FILES
+            log "Changed JSONL files: $SDE_CHANGED_FILES"
+        else
+            unset SDE_CHANGED_FILES
+            log "No JSONL files changed — full load"
+        fi
     else
         unset SDE_CHANGED_FILES
-        log "No JSONL files changed — full load"
+        log "Full load (no previous commit to diff against)"
     fi
-else
-    unset SDE_CHANGED_FILES
-    log "Full load (no previous commit to diff against)"
+    cd "$SCRIPT_DIR"
 fi
-cd "$SCRIPT_DIR"
 
 # ---------------------------------------------------------------------------
 # MSSQL helpers — all SQL run as SA inside the container
