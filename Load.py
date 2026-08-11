@@ -626,9 +626,9 @@ def _run_full():
 
 
 def _run_update():
-    trn_table = metadata.tables.get('trnTranslations') or (
-        metadata.tables.get(f"{schema}.trnTranslations") if schema else None
-    )
+    trn_table = metadata.tables.get('trnTranslations')
+    if trn_table is None and schema:
+        trn_table = metadata.tables.get(f"{schema}.trnTranslations")
     ran_modules = set()
 
     for loader in LOADERS:
