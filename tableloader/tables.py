@@ -3,6 +3,7 @@
 ## see http://code.google.com/p/sqlautocode/
 
 from sqlalchemy import *
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 def metadataCreator(schema):
@@ -1596,7 +1597,7 @@ def metadataCreator(schema):
         Column('presentingCharacterID',        INTEGER(),           nullable=True),
         Column('issuerCorporationID',          INTEGER(),           nullable=True),
         Column('contributionMethod',           VARCHAR(length=100), nullable=True),
-        Column('contributionParameters',       UnicodeText(),       nullable=True),
+        Column('contributionParameters',       JSON().with_variant(JSONB(), 'postgresql'), nullable=True),
         Column('requiredEnlistmentFactionID',  INTEGER(),           nullable=True),
         Column('rewardIskAmount',              FLOAT(),             nullable=True),
         Column('rewardIskInterval',            INTEGER(),           nullable=True),

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 import os
 from sqlalchemy import Table, insert
 
@@ -71,7 +70,7 @@ def import_military_campaign_objectives(connection, metadata, sourcePath, langua
             presentingCharacterID       = r.get('presentingCharacterID'),
             issuerCorporationID         = (r.get('issuer') or {}).get('corporationID'),
             contributionMethod          = cmc.get('name'),
-            contributionParameters      = json.dumps(cmc.get('parameters')) if cmc.get('parameters') else None,
+            contributionParameters      = cmc.get('parameters'),
             requiredEnlistmentFactionID = ann.get('requiredEnlistmentWithFactionID'),
             rewardIskAmount             = isk.get('amountPerInterval'),
             rewardIskInterval           = isk.get('progressInterval'),
