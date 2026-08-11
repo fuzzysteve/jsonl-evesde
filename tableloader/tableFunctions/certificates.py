@@ -29,10 +29,12 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
     certificates.jsonl -> certCerts + certSkills + trnTranslations
     """
     print("Importing certificates")
-    certCerts       = Table('certCerts', metadata)
-    certSkills      = Table('certSkills', metadata)
-    trnTranslations = Table('trnTranslations', metadata)
+    certCerts             = Table('certCerts', metadata)
+    certSkills            = Table('certSkills', metadata)
+    trnTranslations       = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=17, tableName='certCerts', columnName='name', masterID='certID'))
     certs = skills = 0
     for r in _jsonl(sourcePath, 'certificates.jsonl'):
         certID = r['_key']

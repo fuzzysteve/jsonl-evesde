@@ -42,7 +42,9 @@ def import_npc_corporation_divisions(connection, metadata, sourcePath, language=
     print("Importing npcCorporationDivisions")
     tbl = Table('crpNPCDivisions', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=24, tableName='crpNPCDivisions', columnName='divisionName', masterID='divisionID'))
     for r in _jsonl(sourcePath, 'npcCorporationDivisions.jsonl'):
         connection.execute(insert(tbl).values(
             divisionID   = r['_key'],
@@ -67,12 +69,14 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
     """
     print("Importing npcCorporations")
 
-    tbl        = Table('crpNPCCorporations', metadata)
-    tblDivs    = Table('crpNPCCorporationDivisions', metadata)
-    tblTrades  = Table('crpNPCCorporationTrades', metadata)
-    trnTranslations = Table('trnTranslations', metadata)
+    tbl                   = Table('crpNPCCorporations', metadata)
+    tblDivs               = Table('crpNPCCorporationDivisions', metadata)
+    tblTrades             = Table('crpNPCCorporationTrades', metadata)
+    trnTranslations       = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
 
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=20, tableName='crpNPCCorporations', columnName='corporationName', masterID='corporationID'))
     corps = 0
     for r in _jsonl(sourcePath, 'npcCorporations.jsonl'):
         corpID = r['_key']

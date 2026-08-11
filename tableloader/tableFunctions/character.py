@@ -25,7 +25,9 @@ def import_ancestries(connection, metadata, sourcePath, language='en'):
     print("Importing ancestries")
     tbl = Table('chrAncestries', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=12, tableName='chrAncestries', columnName='ancestryName', masterID='ancestryID'))
     count = 0
     for r in _jsonl(sourcePath, 'ancestries.jsonl'):
         connection.execute(insert(tbl).values(
@@ -54,7 +56,9 @@ def import_bloodlines(connection, metadata, sourcePath, language='en'):
     print("Importing bloodlines")
     tbl = Table('chrBloodlines', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=11, tableName='chrBloodlines', columnName='bloodlineName', masterID='bloodlineID'))
     count = 0
     for r in _jsonl(sourcePath, 'bloodlines.jsonl'):
         connection.execute(insert(tbl).values(
@@ -109,7 +113,9 @@ def import_factions(connection, metadata, sourcePath, language='en'):
     print("Importing factions")
     tbl = Table('chrFactions', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=19, tableName='chrFactions', columnName='factionName', masterID='factionID'))
     count = 0
     for r in _jsonl(sourcePath, 'factions.jsonl'):
         # raceIDs is a bitmask sum of memberRaces list, matching classic SDE
@@ -140,7 +146,9 @@ def import_races(connection, metadata, sourcePath, language='en'):
     print("Importing races")
     tbl = Table('chrRaces', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=16, tableName='chrRaces', columnName='raceName', masterID='raceID'))
     count = 0
     for r in _jsonl(sourcePath, 'races.jsonl'):
         connection.execute(insert(tbl).values(

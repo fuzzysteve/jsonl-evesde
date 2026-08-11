@@ -36,9 +36,12 @@ def _jsonl(sourcePath, filename):
 def import_types(connection,metadata,sourcePath,language='en'):
     invTypes = Table('invTypes',metadata)
     trnTranslations = Table('trnTranslations',metadata)
+    trnTranslationColumns = Table('trnTranslationColumns',metadata)
     invMetaTypes = Table('invMetaTypes',metadata)
     print("Importing Types")
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=8,  tableName='invTypes', columnName='typeName',    masterID='typeID'))
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=33, tableName='invTypes', columnName='description', masterID='typeID'))
     with open(os.path.join(sourcePath,'types.jsonl'), 'r') as json_file:
         json_list = list(json_file)
     for json_str in json_list:
@@ -149,8 +152,10 @@ def import_dogma(connection,metadata,sourcePath,language='en'):
 def import_groups(connection,metadata,sourcePath,language='en'):
     invGroups = Table('invGroups',metadata)
     trnTranslations = Table('trnTranslations',metadata)
+    trnTranslationColumns = Table('trnTranslationColumns',metadata)
     print("Importing Groups")
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=7, tableName='invGroups', columnName='groupName', masterID='groupID'))
     with open(os.path.join(sourcePath,'groups.jsonl'), 'r') as json_file:
         json_list = list(json_file)
     for json_str in json_list:
@@ -174,8 +179,10 @@ def import_groups(connection,metadata,sourcePath,language='en'):
 def import_categories(connection,metadata,sourcePath,language='en'):
     invCategories = Table('invCategories',metadata)
     trnTranslations = Table('trnTranslations',metadata)
+    trnTranslationColumns = Table('trnTranslationColumns',metadata)
     print("Importing Categories")
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=6, tableName='invCategories', columnName='categoryName', masterID='categoryID'))
     with open(os.path.join(sourcePath,'categories.jsonl'), 'r') as json_file:
         json_list = list(json_file)
     for json_str in json_list:
@@ -197,7 +204,9 @@ def import_meta_groups(connection, metadata, sourcePath, language='en'):
     print("Importing metaGroups")
     tbl = Table('invMetaGroups', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=15, tableName='invMetaGroups', columnName='metaGroupName', masterID='metaGroupID'))
     for r in _jsonl(sourcePath, 'metaGroups.jsonl'):
         connection.execute(insert(tbl).values(
             metaGroupID   = r['_key'],
@@ -215,7 +224,9 @@ def import_market_groups(connection, metadata, sourcePath, language='en'):
     print("Importing marketGroups")
     tbl = Table('invMarketGroups', metadata)
     trnTranslations = Table('trnTranslations', metadata)
+    trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=14, tableName='invMarketGroups', columnName='marketGroupName', masterID='marketGroupID'))
     count = 0
     for r in _jsonl(sourcePath, 'marketGroups.jsonl'):
         connection.execute(insert(tbl).values(
