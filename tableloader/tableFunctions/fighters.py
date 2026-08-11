@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_fighter_abilities(connection, metadata, sourcePath, language='en'):
     """fighterAbilities.jsonl -> fighterAbilities + trnTranslations"""
-    print("Importing fighterAbilities")
+    _log("Importing fighterAbilities")
     tbl      = Table('fighterAbilities', metadata)
     trn      = Table('trnTranslations', metadata)
     trn_cols = Table('trnTranslationColumns', metadata)
@@ -51,12 +55,12 @@ def import_fighter_abilities(connection, metadata, sourcePath, language='en'):
             for lang, text in tooltip.items():
                 connection.execute(insert(trn).values(tcID=41, keyID=aid, languageID=lang, text=text))
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_fighter_abilities_by_type(connection, metadata, sourcePath, language='en'):
     """fighterAbilitiesByType.jsonl -> fighterAbilitiesByType"""
-    print("Importing fighterAbilitiesByType")
+    _log("Importing fighterAbilitiesByType")
     tbl = Table('fighterAbilitiesByType', metadata)
     trans = connection.begin()
     count = 0
@@ -77,4 +81,4 @@ def import_fighter_abilities_by_type(connection, metadata, sourcePath, language=
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

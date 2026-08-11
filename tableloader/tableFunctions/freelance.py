@@ -20,6 +20,10 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'):
     """
     freelanceJobSchemas.jsonl -> freelanceJobSchemas
@@ -28,7 +32,7 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
 
     The file has a single outer record whose _value is the list of job schemas.
     """
-    print("Importing freelanceJobSchemas")
+    _log("Importing freelanceJobSchemas")
     tblSchemas = Table('freelanceJobSchemas', metadata)
     tblTags    = Table('freelanceJobSchemaContentTags', metadata)
     tblParams  = Table('freelanceJobSchemaParameters', metadata)
@@ -67,4 +71,4 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
                 params += 1
 
     trans.commit()
-    print("    {} schemas, {} tag rows, {} parameter rows".format(schemas, tags, params))
+    _log("    {} schemas, {} tag rows, {} parameter rows".format(schemas, tags, params))

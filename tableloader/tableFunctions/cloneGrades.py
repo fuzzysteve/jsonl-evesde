@@ -14,6 +14,10 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
  
  
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_clone_grades(connection, metadata, sourcePath, language='en'):
     """
     cloneGrades.jsonl -> chrCloneGrades + chrCloneGradeSkills
@@ -21,7 +25,7 @@ def import_clone_grades(connection, metadata, sourcePath, language='en'):
     Clone grades are named skill cap presets (Alpha clone skill sets).
     _key is the raceID bitmask (1=Caldari, 2=Minmatar, 4=Amarr, 8=Gallente).
     """
-    print("Importing cloneGrades")
+    _log("Importing cloneGrades")
     tblCloneGrades = Table('chrCloneGrades', metadata)
     tblSkills     = Table('chrCloneGradeSkills', metadata)
     trans = connection.begin()
@@ -41,5 +45,5 @@ def import_clone_grades(connection, metadata, sourcePath, language='en'):
             ))
             skills += 1
     trans.commit()
-    print("    {} clone grades, {} skill rows".format(grades, skills))
+    _log("    {} clone grades, {} skill rows".format(grades, skills))
 

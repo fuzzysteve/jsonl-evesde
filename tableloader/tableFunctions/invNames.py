@@ -3,6 +3,10 @@
 from sqlalchemy import Table, select, insert, text
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def build_inv_names(connection, connectiontype):
     """
     Populates invNames and invUniqueNames from mapDenormalize.
@@ -12,7 +16,7 @@ def build_inv_names(connection, connectiontype):
 
     Call this after all map data and station names are loaded.
     """
-    print("Building invNames and invUniqueNames from mapDenormalize")
+    _log("Building invNames and invUniqueNames from mapDenormalize")
 
     sql = {}
 
@@ -132,4 +136,4 @@ def build_inv_names(connection, connectiontype):
     for statement in sql[connectiontype]:
         connection.execute(text(statement))
     trans.commit()
-    print("invNames and invUniqueNames built")
+    _log("invNames and invUniqueNames built")

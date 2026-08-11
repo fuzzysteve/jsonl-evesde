@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_archetypes(connection, metadata, sourcePath, language='en'):
     """archetypes.jsonl -> dungeonArchetypes"""
-    print("Importing dungeonArchetypes")
+    _log("Importing dungeonArchetypes")
     tbl = Table('dungeonArchetypes', metadata)
     trans = connection.begin()
     count = 0
@@ -34,14 +38,14 @@ def import_archetypes(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_missions(connection, metadata, sourcePath, language='en'):
     """
     missions.jsonl -> mstMissions + mstMissionMessages + mstMissionExtraStandings
     """
-    print("Importing missions")
+    _log("Importing missions")
     tblMissions  = Table('mstMissions', metadata)
     tblMessages  = Table('mstMissionMessages', metadata)
     tblStandings = Table('mstMissionExtraStandings', metadata)
@@ -96,14 +100,14 @@ def import_missions(connection, metadata, sourcePath, language='en'):
             standings += 1
 
     trans.commit()
-    print("    {} missions, {} messages, {} standing rows".format(missions, messages, standings))
+    _log("    {} missions, {} messages, {} standing rows".format(missions, messages, standings))
 
 
 def import_epic_arcs(connection, metadata, sourcePath, language='en'):
     """
     epicArcs.jsonl -> epicArcs + epicArcMissions + epicArcMissionNextMissions
     """
-    print("Importing epicArcs")
+    _log("Importing epicArcs")
     tblArcs      = Table('epicArcs', metadata)
     tblArcMiss   = Table('epicArcMissions', metadata)
     tblNextMiss  = Table('epicArcMissionNextMissions', metadata)
@@ -139,14 +143,14 @@ def import_epic_arcs(connection, metadata, sourcePath, language='en'):
                 next_missions += 1
 
     trans.commit()
-    print("    {} arcs, {} arc-mission rows, {} next-mission rows".format(arcs, arc_missions, next_missions))
+    _log("    {} arcs, {} arc-mission rows, {} next-mission rows".format(arcs, arc_missions, next_missions))
 
 
 def import_dungeons(connection, metadata, sourcePath, language='en'):
     """
     dungeons.jsonl -> dungeons + dungeonAllowedShips
     """
-    print("Importing dungeons")
+    _log("Importing dungeons")
     tblDungeons = Table('dungeons', metadata)
     tblShips    = Table('dungeonAllowedShips', metadata)
     trans = connection.begin()
@@ -171,4 +175,4 @@ def import_dungeons(connection, metadata, sourcePath, language='en'):
             ships += 1
 
     trans.commit()
-    print("    {} dungeons, {} allowed-ship rows".format(dungeons, ships))
+    _log("    {} dungeons, {} allowed-ship rows".format(dungeons, ships))

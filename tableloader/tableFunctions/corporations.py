@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_corporation_role_groups(connection, metadata, sourcePath, language='en'):
     """corporationRoleGroups.jsonl -> crpRoleGroups + trnTranslations"""
-    print("Importing corporationRoleGroups")
+    _log("Importing corporationRoleGroups")
     tbl      = Table('crpRoleGroups', metadata)
     trn      = Table('trnTranslations', metadata)
     trn_cols = Table('trnTranslationColumns', metadata)
@@ -45,12 +49,12 @@ def import_corporation_role_groups(connection, metadata, sourcePath, language='e
             for lang, text in name.items():
                 connection.execute(insert(trn).values(tcID=37, keyID=gid, languageID=lang, text=text))
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_corporation_roles(connection, metadata, sourcePath, language='en'):
     """corporationRoles.jsonl -> crpRoles + crpRoleRoleGroups + trnTranslations"""
-    print("Importing corporationRoles")
+    _log("Importing corporationRoles")
     tbl_roles  = Table('crpRoles', metadata)
     tbl_groups = Table('crpRoleRoleGroups', metadata)
     trn        = Table('trnTranslations', metadata)
@@ -80,4 +84,4 @@ def import_corporation_roles(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_groups).values(roleID=rid, roleGroupID=grp_id))
             groups += 1
     trans.commit()
-    print("    {} roles, {} role-group rows".format(roles, groups))
+    _log("    {} roles, {} role-group rows".format(roles, groups))

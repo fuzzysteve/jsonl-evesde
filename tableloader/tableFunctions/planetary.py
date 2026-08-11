@@ -20,6 +20,10 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_planet_resources(connection, metadata, sourcePath, language='en'):
     """
     planetResources.jsonl -> planetResources
@@ -27,7 +31,7 @@ def import_planet_resources(connection, metadata, sourcePath, language='en'):
     New table — add definition from planetResources_table_definition.py to tables.py.
     _key = celestialID (a planet itemID from mapDenormalize).
     """
-    print("Importing planetResources")
+    _log("Importing planetResources")
     tbl = Table('planetResources', metadata)
     trans = connection.begin()
     count = 0
@@ -45,12 +49,12 @@ def import_planet_resources(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_planet_schematics(connection, metadata, sourcePath, language='en'):
     """planetSchematics.jsonl -> planetSchematics + planetSchematicsPinMap + planetSchematicsTypeMap"""
-    print("Importing planetSchematics")
+    _log("Importing planetSchematics")
     tblSchematics = Table('planetSchematics', metadata)
     tblPinMap     = Table('planetSchematicsPinMap', metadata)
     tblTypeMap    = Table('planetSchematicsTypeMap', metadata)
@@ -77,4 +81,4 @@ def import_planet_schematics(connection, metadata, sourcePath, language='en'):
             ))
         count += 1
     trans.commit()
-    print("    {} schematics imported".format(count))
+    _log("    {} schematics imported".format(count))

@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_military_campaigns(connection, metadata, sourcePath, language='en'):
     """militaryCampaigns.jsonl -> milCampaigns"""
-    print("Importing militaryCampaigns")
+    _log("Importing militaryCampaigns")
     tbl = Table('milCampaigns', metadata)
     trans = connection.begin()
     count = 0
@@ -41,12 +45,12 @@ def import_military_campaigns(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_military_campaign_objectives(connection, metadata, sourcePath, language='en'):
     """militaryCampaignObjectives.jsonl -> milCampaignObjectives + milCampaignObjContentTags"""
-    print("Importing militaryCampaignObjectives")
+    _log("Importing militaryCampaignObjectives")
     tblObj  = Table('milCampaignObjectives', metadata)
     tblTags = Table('milCampaignObjContentTags', metadata)
     trans = connection.begin()
@@ -93,12 +97,12 @@ def import_military_campaign_objectives(connection, metadata, sourcePath, langua
             tags += 1
 
     trans.commit()
-    print("    {} objectives, {} content-tag rows".format(objectives, tags))
+    _log("    {} objectives, {} content-tag rows".format(objectives, tags))
 
 
 def import_mercenary_tactical_operations(connection, metadata, sourcePath, language='en'):
     """mercenaryTacticalOperations.jsonl -> mercenaryTacticalOperations"""
-    print("Importing mercenaryTacticalOperations")
+    _log("Importing mercenaryTacticalOperations")
     tbl = Table('mercenaryTacticalOperations', metadata)
     trans = connection.begin()
     count = 0
@@ -114,12 +118,12 @@ def import_mercenary_tactical_operations(connection, metadata, sourcePath, langu
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_sovereignty_upgrades(connection, metadata, sourcePath, language='en'):
     """sovereigntyUpgrades.jsonl -> sovereigntyUpgrades"""
-    print("Importing sovereigntyUpgrades")
+    _log("Importing sovereigntyUpgrades")
     tbl = Table('sovereigntyUpgrades', metadata)
     trans = connection.begin()
     count = 0
@@ -138,4 +142,4 @@ def import_sovereignty_upgrades(connection, metadata, sourcePath, language='en')
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

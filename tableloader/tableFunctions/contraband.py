@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_contraband_types(connection, metadata, sourcePath, language='en'):
     """contrabandTypes.jsonl -> invContrabandTypes"""
-    print("Importing contrabandTypes")
+    _log("Importing contrabandTypes")
     tbl = Table('invContrabandTypes', metadata)
     trans = connection.begin()
     count = 0
@@ -33,4 +37,4 @@ def import_contraband_types(connection, metadata, sourcePath, language='en'):
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

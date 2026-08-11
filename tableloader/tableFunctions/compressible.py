@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_compressible_types(connection, metadata, sourcePath, language='en'):
     """compressibleTypes.jsonl -> compressibleTypes"""
-    print("Importing compressibleTypes")
+    _log("Importing compressibleTypes")
     tbl = Table('compressibleTypes', metadata)
     trans = connection.begin()
     count = 0
@@ -27,4 +31,4 @@ def import_compressible_types(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

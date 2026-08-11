@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_graphic_material_sets(connection, metadata, sourcePath, language='en'):
     """graphicMaterialSets.jsonl -> graphicMaterialSets"""
-    print("Importing graphicMaterialSets")
+    _log("Importing graphicMaterialSets")
     tbl = Table('graphicMaterialSets', metadata)
     trans = connection.begin()
     count = 0
@@ -49,12 +53,12 @@ def import_graphic_material_sets(connection, metadata, sourcePath, language='en'
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_graphics(connection, metadata, sourcePath, language='en'):
     """graphics.jsonl -> eveGraphics"""
-    print("Importing graphics")
+    _log("Importing graphics")
     tbl = Table('eveGraphics', metadata)
     trans = connection.begin()
     count = 0
@@ -71,12 +75,12 @@ def import_graphics(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_icons(connection, metadata, sourcePath, language='en'):
     """icons.jsonl -> eveIcons"""
-    print("Importing icons")
+    _log("Importing icons")
     tbl = Table('eveIcons', metadata)
     trans = connection.begin()
     count = 0
@@ -88,4 +92,4 @@ def import_icons(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

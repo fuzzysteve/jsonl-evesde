@@ -20,8 +20,12 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_type_lists(connection, metadata, sourcePath, language='en'):
-    print("Importing typeLists")
+    _log("Importing typeLists")
  
     header      = Table('typeListsHeader', metadata)
     incTypes    = Table('typeListsIncludedTypeIDs', metadata)
@@ -55,5 +59,5 @@ def import_type_lists(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(excCats).values(typeListID=lid, categoryID=categoryID))
         count += 1
     trans.commit()
-    print("    {} type lists imported".format(count))
+    _log("    {} type lists imported".format(count))
 

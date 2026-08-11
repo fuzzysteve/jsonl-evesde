@@ -13,7 +13,7 @@ def _trunc(s, length=100):
     if s is None:
         return None
     if len(s) > length:
-        print("  WARNING: truncating name to {}: '{}'".format(length, s))
+        _log("  WARNING: truncating name to {}: '{}'".format(length, s))
         return s[:length]
     return s
 
@@ -33,12 +33,16 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_types(connection,metadata,sourcePath,language='en'):
     invTypes = Table('invTypes',metadata)
     trnTranslations = Table('trnTranslations',metadata)
     trnTranslationColumns = Table('trnTranslationColumns',metadata)
     invMetaTypes = Table('invMetaTypes',metadata)
-    print("Importing Types")
+    _log("Importing Types")
     trans = connection.begin()
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=8,  tableName='invTypes', columnName='typeName',    masterID='typeID'))
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=33, tableName='invTypes', columnName='description', masterID='typeID'))
@@ -82,7 +86,7 @@ def import_types(connection,metadata,sourcePath,language='en'):
 
 def import_bonus(connection,metadata,sourcePath,language='en'):
     invTraits = Table('invTraits',metadata)
-    print("Importing bonuses")
+    _log("Importing bonuses")
     trans = connection.begin()
     with open(os.path.join(sourcePath,'typeBonus.jsonl'), 'r') as json_file:
         json_list = list(json_file)
@@ -112,7 +116,7 @@ def import_bonus(connection,metadata,sourcePath,language='en'):
 
 def import_materials(connection,metadata,sourcePath,language='en'):
     invTypeMaterials = Table('invTypeMaterials',metadata)
-    print("Importing materials")
+    _log("Importing materials")
     trans = connection.begin()
     with open(os.path.join(sourcePath,'typeMaterials.jsonl'), 'r') as json_file:
         json_list = list(json_file)
@@ -130,7 +134,7 @@ def import_dogma(connection,metadata,sourcePath,language='en'):
     dgmEffects = Table('dgmTypeEffects',metadata)
     dgmAttributes = Table('dgmTypeAttributes',metadata)
 
-    print("Importing type dogma")
+    _log("Importing type dogma")
     trans = connection.begin()
     with open(os.path.join(sourcePath,'typeDogma.jsonl'), 'r') as json_file:
         json_list = list(json_file)
@@ -153,7 +157,7 @@ def import_groups(connection,metadata,sourcePath,language='en'):
     invGroups = Table('invGroups',metadata)
     trnTranslations = Table('trnTranslations',metadata)
     trnTranslationColumns = Table('trnTranslationColumns',metadata)
-    print("Importing Groups")
+    _log("Importing Groups")
     trans = connection.begin()
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=7, tableName='invGroups', columnName='groupName', masterID='groupID'))
     with open(os.path.join(sourcePath,'groups.jsonl'), 'r') as json_file:
@@ -180,7 +184,7 @@ def import_categories(connection,metadata,sourcePath,language='en'):
     invCategories = Table('invCategories',metadata)
     trnTranslations = Table('trnTranslations',metadata)
     trnTranslationColumns = Table('trnTranslationColumns',metadata)
-    print("Importing Categories")
+    _log("Importing Categories")
     trans = connection.begin()
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=6, tableName='invCategories', columnName='categoryName', masterID='categoryID'))
     with open(os.path.join(sourcePath,'categories.jsonl'), 'r') as json_file:
@@ -201,7 +205,7 @@ def import_categories(connection,metadata,sourcePath,language='en'):
  
 def import_meta_groups(connection, metadata, sourcePath, language='en'):
     """metaGroups.jsonl -> invMetaGroups"""
-    print("Importing metaGroups")
+    _log("Importing metaGroups")
     tbl = Table('invMetaGroups', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -221,7 +225,7 @@ def import_meta_groups(connection, metadata, sourcePath, language='en'):
  
 def import_market_groups(connection, metadata, sourcePath, language='en'):
     """marketGroups.jsonl -> invMarketGroups + trnTranslations"""
-    print("Importing marketGroups")
+    _log("Importing marketGroups")
     tbl = Table('invMarketGroups', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -242,5 +246,5 @@ def import_market_groups(connection, metadata, sourcePath, language='en'):
                 tcID=14, keyID=r['_key'], languageID=lang, text=text))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 

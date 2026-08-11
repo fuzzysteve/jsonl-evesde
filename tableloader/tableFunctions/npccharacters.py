@@ -20,12 +20,16 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_npc_characters(connection, metadata, sourcePath, language='en'):
     """
     npcCharacters.jsonl -> agtNpcCharacters (all records)
                         -> agtAgents (records with an 'agent' sub-dict only)
     """
-    print("Importing npcCharacters")
+    _log("Importing npcCharacters")
     tblChars  = Table('npcCharacters', metadata)
     tblAgents = Table('agtAgents', metadata)
     tblResearch = Table('agtResearchAgents', metadata)
@@ -69,4 +73,4 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
             research += 1
 
     trans.commit()
-    print("    {} characters, {} agents".format(total, agents))
+    _log("    {} characters, {} agents".format(total, agents))

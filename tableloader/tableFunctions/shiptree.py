@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_ship_tree_elements(connection, metadata, sourcePath, language='en'):
     """shipTreeElements.jsonl -> shipTreeElements"""
-    print("Importing shipTreeElements")
+    _log("Importing shipTreeElements")
     tbl = Table('shipTreeElements', metadata)
     trans = connection.begin()
     count = 0
@@ -35,12 +39,12 @@ def import_ship_tree_elements(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_ship_tree_groups(connection, metadata, sourcePath, language='en'):
     """shipTreeGroups.jsonl -> shipTreeGroups + shipTreeGroupElements + shipTreeGroupPreReqSkills"""
-    print("Importing shipTreeGroups")
+    _log("Importing shipTreeGroups")
     tblGroups  = Table('shipTreeGroups', metadata)
     tblElems   = Table('shipTreeGroupElements', metadata)
     tblSkills  = Table('shipTreeGroupPreReqSkills', metadata)
@@ -81,12 +85,12 @@ def import_ship_tree_groups(connection, metadata, sourcePath, language='en'):
                 skills += 1
 
     trans.commit()
-    print("    {} groups, {} element rows, {} prereq-skill rows".format(groups, elements, skills))
+    _log("    {} groups, {} element rows, {} prereq-skill rows".format(groups, elements, skills))
 
 
 def import_ship_tree_factions(connection, metadata, sourcePath, language='en'):
     """shipTreeFactions.jsonl -> shipTreeFactions + shipTreeFactionElements"""
-    print("Importing shipTreeFactions")
+    _log("Importing shipTreeFactions")
     tblFactions = Table('shipTreeFactions', metadata)
     tblElems    = Table('shipTreeFactionElements', metadata)
     trans = connection.begin()
@@ -110,12 +114,12 @@ def import_ship_tree_factions(connection, metadata, sourcePath, language='en'):
             elements += 1
 
     trans.commit()
-    print("    {} factions, {} element rows".format(factions, elements))
+    _log("    {} factions, {} element rows".format(factions, elements))
 
 
 def import_type_elements(connection, metadata, sourcePath, language='en'):
     """typeElements.jsonl -> typeElements"""
-    print("Importing typeElements")
+    _log("Importing typeElements")
     tbl = Table('typeElements', metadata)
     trans = connection.begin()
     types = rows = 0
@@ -132,4 +136,4 @@ def import_type_elements(connection, metadata, sourcePath, language='en'):
             rows += 1
 
     trans.commit()
-    print("    {} types, {} element rows".format(types, rows))
+    _log("    {} types, {} element rows".format(types, rows))

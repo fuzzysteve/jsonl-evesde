@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_corporation_activities(connection, metadata, sourcePath, language='en'):
     """corporationActivities.jsonl -> crpActivities"""
-    print("Importing corporationActivities")
+    _log("Importing corporationActivities")
     tbl = Table('crpActivities', metadata)
     trans = connection.begin()
     count = 0
@@ -34,12 +38,12 @@ def import_corporation_activities(connection, metadata, sourcePath, language='en
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_npc_corporation_divisions(connection, metadata, sourcePath, language='en'):
     """npcCorporationDivisions.jsonl -> crpNPCDivisions"""
-    print("Importing npcCorporationDivisions")
+    _log("Importing npcCorporationDivisions")
     tbl = Table('crpNPCDivisions', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -67,7 +71,7 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
         crpNPCCorporationResearchFields (via lpOfferTables — not in source; skipped)
         trnTranslations
     """
-    print("Importing npcCorporations")
+    _log("Importing npcCorporations")
 
     tbl                   = Table('crpNPCCorporations', metadata)
     tblDivs               = Table('crpNPCCorporationDivisions', metadata)
@@ -137,4 +141,4 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
                 tcID=20, keyID=corpID, languageID=lang, text=text))
 
     trans.commit()
-    print("    {} corporations imported".format(corps))
+    _log("    {} corporations imported".format(corps))

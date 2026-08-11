@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_applied_proximity_effects(connection, metadata, sourcePath, language='en'):
     """appliedProximityEffects.jsonl -> aplProximityEffects + aplProximityEffectDbuffs"""
-    print("Importing appliedProximityEffects")
+    _log("Importing appliedProximityEffects")
     tbl_main  = Table('aplProximityEffects', metadata)
     tbl_dbuff = Table('aplProximityEffectDbuffs', metadata)
     trans = connection.begin()
@@ -33,12 +37,12 @@ def import_applied_proximity_effects(connection, metadata, sourcePath, language=
             connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
             dbuffs += 1
     trans.commit()
-    print("    {} effects, {} dbuff rows".format(main, dbuffs))
+    _log("    {} effects, {} dbuff rows".format(main, dbuffs))
 
 
 def import_proximity_traps(connection, metadata, sourcePath, language='en'):
     """proximityTrap.jsonl -> proximityTraps"""
-    print("Importing proximityTrap")
+    _log("Importing proximityTrap")
     tbl = Table('proximityTraps', metadata)
     trans = connection.begin()
     count = 0
@@ -53,12 +57,12 @@ def import_proximity_traps(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_link_with_ship(connection, metadata, sourcePath, language='en'):
     """linkWithShip.jsonl -> linkWithShip + linkWithShipDbuffs"""
-    print("Importing linkWithShip")
+    _log("Importing linkWithShip")
     tbl_main  = Table('linkWithShip', metadata)
     tbl_dbuff = Table('linkWithShipDbuffs', metadata)
     trans = connection.begin()
@@ -85,12 +89,12 @@ def import_link_with_ship(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
             dbuffs += 1
     trans.commit()
-    print("    {} records, {} dbuff rows".format(main, dbuffs))
+    _log("    {} records, {} dbuff rows".format(main, dbuffs))
 
 
 def import_system_dbuff_emitters(connection, metadata, sourcePath, language='en'):
     """systemDbuffEmitters.jsonl -> sysDbuffEmitters + sysDbuffEmitterDbuffs"""
-    print("Importing systemDbuffEmitters")
+    _log("Importing systemDbuffEmitters")
     tbl_main  = Table('sysDbuffEmitters', metadata)
     tbl_dbuff = Table('sysDbuffEmitterDbuffs', metadata)
     trans = connection.begin()
@@ -108,12 +112,12 @@ def import_system_dbuff_emitters(connection, metadata, sourcePath, language='en'
             connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
             dbuffs += 1
     trans.commit()
-    print("    {} emitters, {} dbuff rows".format(main, dbuffs))
+    _log("    {} emitters, {} dbuff rows".format(main, dbuffs))
 
 
 def import_system_wide_effects(connection, metadata, sourcePath, language='en'):
     """systemWideEffects.jsonl -> sysWideEffects + sysWideEffectDbuffs"""
-    print("Importing systemWideEffects")
+    _log("Importing systemWideEffects")
     tbl_main  = Table('sysWideEffects', metadata)
     tbl_dbuff = Table('sysWideEffectDbuffs', metadata)
     trans = connection.begin()
@@ -129,12 +133,12 @@ def import_system_wide_effects(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_dbuff).values(solarSystemID=ssid, dbuffID=d['_key'], value=d['_value']))
             dbuffs += 1
     trans.commit()
-    print("    {} systems, {} dbuff rows".format(main, dbuffs))
+    _log("    {} systems, {} dbuff rows".format(main, dbuffs))
 
 
 def import_metenox_moon_drills(connection, metadata, sourcePath, language='en'):
     """metenoxMoonDrill.jsonl -> metenoxMoonDrills"""
-    print("Importing metenoxMoonDrill")
+    _log("Importing metenoxMoonDrill")
     tbl = Table('metenoxMoonDrills', metadata)
     trans = connection.begin()
     count = 0
@@ -147,4 +151,4 @@ def import_metenox_moon_drills(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

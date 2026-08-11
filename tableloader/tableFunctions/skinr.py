@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_skinr_component_categories(connection, metadata, sourcePath, language='en'):
     """skinrComponentCategories.jsonl -> skinrComponentCategories"""
-    print("Importing skinrComponentCategories")
+    _log("Importing skinrComponentCategories")
     tbl = Table('skinrComponentCategories', metadata)
     trans = connection.begin()
     count = 0
@@ -33,12 +37,12 @@ def import_skinr_component_categories(connection, metadata, sourcePath, language
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_component_rarities(connection, metadata, sourcePath, language='en'):
     """skinrComponentRarities.jsonl -> skinrComponentRarities"""
-    print("Importing skinrComponentRarities")
+    _log("Importing skinrComponentRarities")
     tbl = Table('skinrComponentRarities', metadata)
     trans = connection.begin()
     count = 0
@@ -50,12 +54,12 @@ def import_skinr_component_rarities(connection, metadata, sourcePath, language='
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_component_point_values(connection, metadata, sourcePath, language='en'):
     """skinrComponentPointValues.jsonl -> skinrComponentPointValues (categoryID x rarityID -> points)"""
-    print("Importing skinrComponentPointValues")
+    _log("Importing skinrComponentPointValues")
     tbl = Table('skinrComponentPointValues', metadata)
     trans = connection.begin()
     count = 0
@@ -69,12 +73,12 @@ def import_skinr_component_point_values(connection, metadata, sourcePath, langua
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_components(connection, metadata, sourcePath, language='en'):
     """skinrComponents.jsonl -> skinrComponents + skinrComponentTypes"""
-    print("Importing skinrComponents")
+    _log("Importing skinrComponents")
     tblComps = Table('skinrComponents', metadata)
     tblTypes = Table('skinrComponentTypes', metadata)
     trans = connection.begin()
@@ -108,12 +112,12 @@ def import_skinr_components(connection, metadata, sourcePath, language='en'):
             types += 1
 
     trans.commit()
-    print("    {} components, {} type rows".format(components, types))
+    _log("    {} components, {} type rows".format(components, types))
 
 
 def import_skinr_slot_categories(connection, metadata, sourcePath, language='en'):
     """skinrSlotCategories.jsonl -> skinrSlotCategories"""
-    print("Importing skinrSlotCategories")
+    _log("Importing skinrSlotCategories")
     tbl = Table('skinrSlotCategories', metadata)
     trans = connection.begin()
     count = 0
@@ -124,12 +128,12 @@ def import_skinr_slot_categories(connection, metadata, sourcePath, language='en'
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_slot_names(connection, metadata, sourcePath, language='en'):
     """skinrSlotNames.jsonl -> skinrSlotNames"""
-    print("Importing skinrSlotNames")
+    _log("Importing skinrSlotNames")
     tbl = Table('skinrSlotNames', metadata)
     trans = connection.begin()
     count = 0
@@ -140,12 +144,12 @@ def import_skinr_slot_names(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_slots(connection, metadata, sourcePath, language='en'):
     """skinrSlots.jsonl -> skinrSlots + skinrSlotAllowedCategories"""
-    print("Importing skinrSlots")
+    _log("Importing skinrSlots")
     tblSlots = Table('skinrSlots', metadata)
     tblCats  = Table('skinrSlotAllowedCategories', metadata)
     trans = connection.begin()
@@ -168,12 +172,12 @@ def import_skinr_slots(connection, metadata, sourcePath, language='en'):
             cats += 1
 
     trans.commit()
-    print("    {} slots, {} allowed-category rows".format(slots, cats))
+    _log("    {} slots, {} allowed-category rows".format(slots, cats))
 
 
 def import_skinr_slot_configurations(connection, metadata, sourcePath, language='en'):
     """skinrSlotConfigurations.jsonl -> skinrSlotConfigurations + skinrSlotConfigurationSlots + skinrSlotConfigurationShips"""
-    print("Importing skinrSlotConfigurations")
+    _log("Importing skinrSlotConfigurations")
     tblConfigs = Table('skinrSlotConfigurations', metadata)
     tblSlots   = Table('skinrSlotConfigurationSlots', metadata)
     tblShips   = Table('skinrSlotConfigurationShips', metadata)
@@ -205,12 +209,12 @@ def import_skinr_slot_configurations(connection, metadata, sourcePath, language=
             ship_rows += 1
 
     trans.commit()
-    print("    {} configs, {} slot rows, {} ship rows".format(configs, slot_rows, ship_rows))
+    _log("    {} configs, {} slot rows, {} ship rows".format(configs, slot_rows, ship_rows))
 
 
 def import_skinr_tier_thresholds(connection, metadata, sourcePath, language='en'):
     """skinrTierThresholds.jsonl -> skinrTierThresholds (groupID x tier -> threshold)"""
-    print("Importing skinrTierThresholds")
+    _log("Importing skinrTierThresholds")
     tbl = Table('skinrTierThresholds', metadata)
     trans = connection.begin()
     count = 0
@@ -224,12 +228,12 @@ def import_skinr_tier_thresholds(connection, metadata, sourcePath, language='en'
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skinr_slots_to_materials(connection, metadata, sourcePath, language='en'):
     """skinrSlotsToMaterials.jsonl -> skinrSkinSlotToMaterial"""
-    print("Importing skinrSlotsToMaterials")
+    _log("Importing skinrSlotsToMaterials")
     tbl = Table('skinrSkinSlotToMaterial', metadata)
     trans = connection.begin()
     count = 0
@@ -243,4 +247,4 @@ def import_skinr_slots_to_materials(connection, metadata, sourcePath, language='
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

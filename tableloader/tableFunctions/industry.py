@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_industry_activities(connection, metadata, sourcePath, language='en'):
     """industryActivities.jsonl -> ramActivities (plain strings, no translations)"""
-    print("Importing industryActivities")
+    _log("Importing industryActivities")
     tbl = Table('ramActivities', metadata)
     trans = connection.begin()
     count = 0
@@ -28,12 +32,12 @@ def import_industry_activities(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_industry_assembly_lines(connection, metadata, sourcePath, language='en'):
     """industryAssemblyLines.jsonl -> ramAssemblyLines + ramAssemblyLineTypeDetailPerGroup"""
-    print("Importing industryAssemblyLines")
+    _log("Importing industryAssemblyLines")
     tbl_lines  = Table('ramAssemblyLines', metadata)
     tbl_groups = Table('ramAssemblyLineTypeDetailPerGroup', metadata)
     trans = connection.begin()
@@ -59,12 +63,12 @@ def import_industry_assembly_lines(connection, metadata, sourcePath, language='e
             ))
             groups += 1
     trans.commit()
-    print("    {} assembly lines, {} group-detail rows".format(lines, groups))
+    _log("    {} assembly lines, {} group-detail rows".format(lines, groups))
 
 
 def import_industry_installation_types(connection, metadata, sourcePath, language='en'):
     """industryInstallationTypes.jsonl -> ramInstallationTypeContents"""
-    print("Importing industryInstallationTypes")
+    _log("Importing industryInstallationTypes")
     tbl = Table('ramInstallationTypeContents', metadata)
     trans = connection.begin()
     count = 0
@@ -77,12 +81,12 @@ def import_industry_installation_types(connection, metadata, sourcePath, languag
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_industry_modifier_sources(connection, metadata, sourcePath, language='en'):
     """industryModifierSources.jsonl -> indModifierSources"""
-    print("Importing industryModifierSources")
+    _log("Importing industryModifierSources")
     tbl = Table('indModifierSources', metadata)
     trans = connection.begin()
     count = 0
@@ -101,12 +105,12 @@ def import_industry_modifier_sources(connection, metadata, sourcePath, language=
                     ))
                     count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_industry_target_filters(connection, metadata, sourcePath, language='en'):
     """industryTargetFilters.jsonl -> indTargetFilters + indTargetFilterCategories + indTargetFilterGroups"""
-    print("Importing industryTargetFilters")
+    _log("Importing industryTargetFilters")
     tbl_f    = Table('indTargetFilters', metadata)
     tbl_cats = Table('indTargetFilterCategories', metadata)
     tbl_grps = Table('indTargetFilterGroups', metadata)
@@ -132,12 +136,12 @@ def import_industry_target_filters(connection, metadata, sourcePath, language='e
             ))
             grps += 1
     trans.commit()
-    print("    {} filters, {} category rows, {} group rows".format(filters, cats, grps))
+    _log("    {} filters, {} category rows, {} group rows".format(filters, cats, grps))
 
 
 def import_station_operations(connection, metadata, sourcePath, language='en'):
     """stationOperations.jsonl -> staOperations + staOperationServices + staOperationTypes + trnTranslations"""
-    print("Importing stationOperations")
+    _log("Importing stationOperations")
     tbl_ops  = Table('staOperations', metadata)
     tbl_svcs = Table('staOperationServices', metadata)
     tbl_types = Table('staOperationTypes', metadata)
@@ -178,12 +182,12 @@ def import_station_operations(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_types).values(operationID=op_id, raceID=entry['_key'], typeID=entry['_value']))
             types += 1
     trans.commit()
-    print("    {} operations, {} service rows, {} type rows".format(ops, svcs, types))
+    _log("    {} operations, {} service rows, {} type rows".format(ops, svcs, types))
 
 
 def import_station_standings_restrictions(connection, metadata, sourcePath, language='en'):
     """stationStandingsRestrictions.jsonl -> staStandingsRestrictions"""
-    print("Importing stationStandingsRestrictions")
+    _log("Importing stationStandingsRestrictions")
     tbl = Table('staStandingsRestrictions', metadata)
     trans = connection.begin()
     count = 0
@@ -197,4 +201,4 @@ def import_station_standings_restrictions(connection, metadata, sourcePath, lang
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

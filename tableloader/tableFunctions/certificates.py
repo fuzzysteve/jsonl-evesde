@@ -24,11 +24,15 @@ def _en(d, language='en'):
 _CERT_LEVELS = {'basic': 1, 'standard': 2, 'improved': 3, 'advanced': 4, 'elite': 5}
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_certificates(connection, metadata, sourcePath, language='en'):
     """
     certificates.jsonl -> certCerts + certSkills + trnTranslations
     """
-    print("Importing certificates")
+    _log("Importing certificates")
     certCerts             = Table('certCerts', metadata)
     certSkills            = Table('certSkills', metadata)
     trnTranslations       = Table('trnTranslations', metadata)
@@ -62,14 +66,14 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(trnTranslations).values(
                 tcID=17, keyID=certID, languageID=lang, text=text))
     trans.commit()
-    print("    {} certs, {} skill rows".format(certs, skills))
+    _log("    {} certs, {} skill rows".format(certs, skills))
 
 
 def import_masteries(connection, metadata, sourcePath, language='en'):
     """
     masteries.jsonl -> certMasteries(typeID, masteryLevel, certID)
     """
-    print("Importing masteries")
+    _log("Importing masteries")
     tbl = Table('certMasteries', metadata)
     trans = connection.begin()
     count = 0
@@ -85,4 +89,4 @@ def import_masteries(connection, metadata, sourcePath, language='en'):
                 ))
                 count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

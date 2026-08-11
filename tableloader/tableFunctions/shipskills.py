@@ -4,6 +4,10 @@ import json
 import os
 from sqlalchemy import Table, insert, select, text
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def buildSkills(connection, connectiontype):
     """
     Populate the ship skills table with data from dogma
@@ -129,10 +133,10 @@ select typeid,6 groupid, 0 skill, coalesce(valueInt,valueFloat,0) skilllevel fro
     if connectiontype in ( 'mysql', 'mssql'):
         connectiontype = 'other'
 
-    print("Building shipskills tables")
+    _log("Building shipskills tables")
     trans = connection.begin()
     for statement in sql[connectiontype]:
         connection.execute(text(statement))
     trans.commit()
-    print("shipskills complete")
+    _log("shipskills complete")
 

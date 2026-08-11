@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_dogma_attribute_categories(connection, metadata, sourcePath, language='en'):
     """dogmaAttributeCategories.jsonl -> dgmAttributeCategories"""
-    print("Importing dogmaAttributeCategories")
+    _log("Importing dogmaAttributeCategories")
     tbl = Table('dgmAttributeCategories', metadata)
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaAttributeCategories.jsonl'):
@@ -36,7 +40,7 @@ def import_dogma_attribute_categories(connection, metadata, sourcePath, language
 
 def import_dogma_attributes(connection, metadata, sourcePath, language='en'):
     """dogmaAttributes.jsonl -> dgmAttributeTypes"""
-    print("Importing dogmaAttributes")
+    _log("Importing dogmaAttributes")
     tbl = Table('dgmAttributeTypes', metadata)
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaAttributes.jsonl'):
@@ -58,7 +62,7 @@ def import_dogma_attributes(connection, metadata, sourcePath, language='en'):
 
 def import_dogma_effects(connection, metadata, sourcePath, language='en'):
     """dogmaEffects.jsonl -> dgmEffects"""
-    print("Importing dogmaEffects")
+    _log("Importing dogmaEffects")
     tbl = Table('dgmEffects', metadata)
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaEffects.jsonl'):
@@ -98,7 +102,7 @@ def import_dogma_effects(connection, metadata, sourcePath, language='en'):
 
 def import_dogma_units(connection, metadata, sourcePath, language='en'):
     """dogmaUnits.jsonl -> eveUnits"""
-    print("Importing dogmaUnits")
+    _log("Importing dogmaUnits")
     tbl = Table('eveUnits', metadata)
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaUnits.jsonl'):

@@ -14,13 +14,17 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_skin_materials(connection, metadata, sourcePath, language='en'):
     """
     skinMaterials.jsonl -> skinMaterials
     displayNameID is left NULL — the table expects an integer ID but the
     source only has a localised name dict with no corresponding integer key.
     """
-    print("Importing skinMaterials")
+    _log("Importing skinMaterials")
     tbl = Table('skinMaterials', metadata)
     trans = connection.begin()
     count = 0
@@ -32,12 +36,12 @@ def import_skin_materials(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skins(connection, metadata, sourcePath, language='en'):
     """skins.jsonl -> skins + skinShip"""
-    print("Importing skins")
+    _log("Importing skins")
     tblSkins    = Table('skins', metadata)
     tblSkinShip = Table('skinShip', metadata)
     trans = connection.begin()
@@ -57,12 +61,12 @@ def import_skins(connection, metadata, sourcePath, language='en'):
             ))
             ship_rows += 1
     trans.commit()
-    print("    {} skins, {} skinShip rows".format(skins, ship_rows))
+    _log("    {} skins, {} skinShip rows".format(skins, ship_rows))
 
 
 def import_skin_licenses(connection, metadata, sourcePath, language='en'):
     """skinLicenses.jsonl -> skinLicense"""
-    print("Importing skinLicenses")
+    _log("Importing skinLicenses")
     tbl = Table('skinLicense', metadata)
     trans = connection.begin()
     count = 0
@@ -74,4 +78,4 @@ def import_skin_licenses(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

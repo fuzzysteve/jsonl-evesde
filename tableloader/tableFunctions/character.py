@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_ancestries(connection, metadata, sourcePath, language='en'):
     """ancestries.jsonl -> chrAncestries + trnTranslations"""
-    print("Importing ancestries")
+    _log("Importing ancestries")
     tbl = Table('chrAncestries', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -48,12 +52,12 @@ def import_ancestries(connection, metadata, sourcePath, language='en'):
                 tcID=12, keyID=r['_key'], languageID=lang, text=text))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_bloodlines(connection, metadata, sourcePath, language='en'):
     """bloodlines.jsonl -> chrBloodlines + trnTranslations"""
-    print("Importing bloodlines")
+    _log("Importing bloodlines")
     tbl = Table('chrBloodlines', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -85,12 +89,12 @@ def import_bloodlines(connection, metadata, sourcePath, language='en'):
                 tcID=11, keyID=r['_key'], languageID=lang, text=text))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_character_attributes(connection, metadata, sourcePath, language='en'):
     """characterAttributes.jsonl -> chrAttributes"""
-    print("Importing characterAttributes")
+    _log("Importing characterAttributes")
     tbl = Table('chrAttributes', metadata)
     trans = connection.begin()
     count = 0
@@ -105,12 +109,12 @@ def import_character_attributes(connection, metadata, sourcePath, language='en')
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_factions(connection, metadata, sourcePath, language='en'):
     """factions.jsonl -> chrFactions + trnTranslations"""
-    print("Importing factions")
+    _log("Importing factions")
     tbl = Table('chrFactions', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -138,12 +142,12 @@ def import_factions(connection, metadata, sourcePath, language='en'):
                 tcID=19, keyID=r['_key'], languageID=lang, text=text))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_races(connection, metadata, sourcePath, language='en'):
     """races.jsonl -> chrRaces + trnTranslations"""
-    print("Importing races")
+    _log("Importing races")
     tbl = Table('chrRaces', metadata)
     trnTranslations = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
@@ -163,4 +167,4 @@ def import_races(connection, metadata, sourcePath, language='en'):
                 tcID=16, keyID=r['_key'], languageID=lang, text=text))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

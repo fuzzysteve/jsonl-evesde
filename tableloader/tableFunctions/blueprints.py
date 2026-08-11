@@ -6,6 +6,10 @@ import json
 import os
 from sqlalchemy import Table,insert
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_blueprints(connection,metadata,sourcePath,language='en'):
 
 
@@ -20,7 +24,7 @@ def import_blueprints(connection,metadata,sourcePath,language='en'):
     industryActivitySkills = Table('industryActivitySkills',metadata)
     industryActivityProbabilities = Table('industryActivityProbabilities',metadata)
 
-    print("Importing Blueprints")
+    _log("Importing Blueprints")
     trans = connection.begin()
     with open(os.path.join(sourcePath,'blueprints.jsonl'), 'r') as json_file:
         json_list = list(json_file)
@@ -73,6 +77,6 @@ def import_blueprints(connection,metadata,sourcePath,language='en'):
                                                 level=skill['level'])
                         connection.execute(stmt)
             except Exception:
-                print('{} has a bad skill'.format(blueprintid))
+                _log('{} has a bad skill'.format(blueprintid))
 
     trans.commit()

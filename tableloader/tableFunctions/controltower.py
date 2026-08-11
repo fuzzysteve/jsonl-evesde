@@ -14,9 +14,13 @@ def _jsonl(sourcePath, filename):
                 yield json.loads(line)
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_control_tower_resources(connection, metadata, sourcePath, language='en'):
     """controlTowerResources.jsonl -> invControlTowerResources"""
-    print("Importing controlTowerResources")
+    _log("Importing controlTowerResources")
     tbl = Table('invControlTowerResources', metadata)
     trans = connection.begin()
     count = 0
@@ -33,4 +37,4 @@ def import_control_tower_resources(connection, metadata, sourcePath, language='e
             ))
             count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_schools(connection, metadata, sourcePath, language='en'):
     """schools.jsonl -> chrSchools + chrSchoolCareerAgents + chrSchoolStartingStations + trnTranslations"""
-    print("Importing schools")
+    _log("Importing schools")
     tbl_schools  = Table('chrSchools', metadata)
     tbl_agents   = Table('chrSchoolCareerAgents', metadata)
     tbl_stations = Table('chrSchoolStartingStations', metadata)
@@ -71,12 +75,12 @@ def import_schools(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_stations).values(schoolID=sid, stationID=sta_id))
             stations += 1
     trans.commit()
-    print("    {} schools, {} agent rows, {} station rows".format(schools, agents, stations))
+    _log("    {} schools, {} agent rows, {} station rows".format(schools, agents, stations))
 
 
 def import_school_map(connection, metadata, sourcePath, language='en'):
     """schoolMap.jsonl -> chrSchoolMap"""
-    print("Importing schoolMap")
+    _log("Importing schoolMap")
     tbl = Table('chrSchoolMap', metadata)
     trans = connection.begin()
     count = 0
@@ -88,12 +92,12 @@ def import_school_map(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_skill_plans(connection, metadata, sourcePath, language='en'):
     """skillPlans.jsonl -> skillPlans + skillPlanMilestones + skillPlanSkillRequirements + trnTranslations"""
-    print("Importing skillPlans")
+    _log("Importing skillPlans")
     tbl_plans  = Table('skillPlans', metadata)
     tbl_ms     = Table('skillPlanMilestones', metadata)
     tbl_reqs   = Table('skillPlanSkillRequirements', metadata)
@@ -142,12 +146,12 @@ def import_skill_plans(connection, metadata, sourcePath, language='en'):
             ))
             reqs += 1
     trans.commit()
-    print("    {} plans, {} milestone rows, {} skill-req rows".format(plans, milestones, reqs))
+    _log("    {} plans, {} milestone rows, {} skill-req rows".format(plans, milestones, reqs))
 
 
 def import_expert_systems(connection, metadata, sourcePath, language='en'):
     """expertSystems.jsonl -> expertSystems + expertSystemSkillsGranted"""
-    print("Importing expertSystems")
+    _log("Importing expertSystems")
     tbl_es    = Table('expertSystems', metadata)
     tbl_skills = Table('expertSystemSkillsGranted', metadata)
     trans = connection.begin()
@@ -170,4 +174,4 @@ def import_expert_systems(connection, metadata, sourcePath, language='en'):
             ))
             skills += 1
     trans.commit()
-    print("    {} expert systems, {} skill rows".format(systems, skills))
+    _log("    {} expert systems, {} skill rows".format(systems, skills))

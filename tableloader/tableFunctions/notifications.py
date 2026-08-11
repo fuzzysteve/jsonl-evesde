@@ -20,9 +20,13 @@ def _en(d, language='en'):
     return d
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_notification_types(connection, metadata, sourcePath, language='en'):
     """notificationTypes.jsonl -> ntfTypes + trnTranslations"""
-    print("Importing notificationTypes")
+    _log("Importing notificationTypes")
     tbl      = Table('ntfTypes', metadata)
     trn      = Table('trnTranslations', metadata)
     trn_cols = Table('trnTranslationColumns', metadata)
@@ -42,4 +46,4 @@ def import_notification_types(connection, metadata, sourcePath, language='en'):
             for lang, text in dname.items():
                 connection.execute(insert(trn).values(tcID=48, keyID=tid, languageID=lang, text=text))
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))

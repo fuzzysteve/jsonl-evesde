@@ -19,7 +19,7 @@ def _grouplookup(connection, metadata, typeid):
         ).fetchone()
         groupid = row[0] if row else -1
     except Exception:
-        print("Group lookup failed on typeID {}".format(typeid))
+        _log("Group lookup failed on typeID {}".format(typeid))
         groupid = -1
     _typeidcache[typeid] = groupid
     return groupid
@@ -53,13 +53,17 @@ def _trunc(s, length=100):
     if s is None:
         return None
     if len(s) > length:
-        print("  WARNING: truncating name to {}: '{}'".format(length, s))
+        _log("  WARNING: truncating name to {}: '{}'".format(length, s))
         return s[:length]
     return s
 
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now():%H:%M:%S}] {msg}")
+
 def import_map(connection, metadata, sourcePath, language='en'):
-    print("Importing map tables")
+    _log("Importing map tables")
 
     mapRegions                 = Table('mapRegions', metadata)
     mapConstellations          = Table('mapConstellations', metadata)
@@ -73,7 +77,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     # ------------------------------------------------------------------
     # Build all lookups up front
     # ------------------------------------------------------------------
-    print("  Building lookups")
+    _log("  Building lookups")
 
     region_faction = {}   # regionID  -> factionID
     const_faction  = {}   # constID   -> factionID
@@ -110,7 +114,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     # ------------------------------------------------------------------
     # mapRegions
     # ------------------------------------------------------------------
-    print("  Importing mapRegions")
+    _log("  Importing mapRegions")
     count = 0
     for r in _jsonl(sourcePath, 'mapRegions.jsonl'):
         p = r.get('position', {})
@@ -137,12 +141,12 @@ def import_map(connection, metadata, sourcePath, language='en'):
                 locationID=r['_key'], wormholeClassID=r['wormholeClassID'],
             ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapConstellations
     # ------------------------------------------------------------------
-    print("  Importing mapConstellations")
+    _log("  Importing mapConstellations")
     count = 0
     for r in _jsonl(sourcePath, 'mapConstellations.jsonl'):
         p   = r.get('position', {})
@@ -172,12 +176,12 @@ def import_map(connection, metadata, sourcePath, language='en'):
                 locationID=r['_key'], wormholeClassID=r['wormholeClassID'],
             ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapSolarSystems
     # ------------------------------------------------------------------
-    print("  Importing mapSolarSystems")
+    _log("  Importing mapSolarSystems")
     count = 0
     for r in _jsonl(sourcePath, 'mapSolarSystems.jsonl'):
         p   = r.get('position', {})
@@ -227,14 +231,14 @@ def import_map(connection, metadata, sourcePath, language='en'):
                 locationID=r['_key'], wormholeClassID=r['wormholeClassID'],
             ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapStars  ->  mapCelestialStatistics + mapDenormalize
     # Name: <solarSystemName>
     # Stars at 0,0,0 (matching universe.py)
     # ------------------------------------------------------------------
-    print("  Importing mapStars")
+    _log("  Importing mapStars")
     count = 0
     for r in _jsonl(sourcePath, 'mapStars.jsonl'):
         sid = r.get('solarSystemID')
@@ -255,7 +259,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             security        = sec,
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapPlanets  ->  mapCelestialStatistics + mapCelestialGraphics + mapDenormalize
@@ -263,7 +267,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     # Exception: use uniqueName if present
     # orbitID = starID of the system
     # ------------------------------------------------------------------
-    print("  Importing mapPlanets")
+    _log("  Importing mapPlanets")
     count = 0
     for r in _jsonl(sourcePath, 'mapPlanets.jsonl'):
         sid   = r.get('solarSystemID')
@@ -300,7 +304,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             celestialIndex  = r.get('celestialIndex'),
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapMoons  ->  mapCelestialStatistics + mapCelestialGraphics + mapDenormalize
@@ -308,7 +312,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     # orbitName = planet name = <sysName> <celestialIndex>
     # orbitID = parent planetID
     # ------------------------------------------------------------------
-    print("  Importing mapMoons")
+    _log("  Importing mapMoons")
     count = 0
     for r in _jsonl(sourcePath, 'mapMoons.jsonl'):
         sid   = r.get('solarSystemID')
@@ -342,7 +346,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             orbitIndex      = r.get('orbitIndex'),
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapAsteroidBelts  ->  mapCelestialStatistics + mapDenormalize
@@ -350,7 +354,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     # orbitName = planet name = <sysName> <celestialIndex>
     # orbitID = parent planetID
     # ------------------------------------------------------------------
-    print("  Importing mapAsteroidBelts")
+    _log("  Importing mapAsteroidBelts")
     count = 0
     for r in _jsonl(sourcePath, 'mapAsteroidBelts.jsonl'):
         sid   = r.get('solarSystemID')
@@ -381,13 +385,13 @@ def import_map(connection, metadata, sourcePath, language='en'):
             orbitIndex      = r.get('orbitIndex'),
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapStargates  ->  mapJumps + mapDenormalize
     # Name: Stargate (<destinationSolarSystemName>)
     # ------------------------------------------------------------------
-    print("  Importing mapStargates")
+    _log("  Importing mapStargates")
     count = 0
     for r in _jsonl(sourcePath, 'mapStargates.jsonl'):
         sid  = r.get('solarSystemID')
@@ -412,13 +416,13 @@ def import_map(connection, metadata, sourcePath, language='en'):
             security        = sec,
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     # ------------------------------------------------------------------
     # mapSecondarySuns -> mapDenormalize
     # groupID 995, name 'Unknown Anomaly', security 0 — matching universe.py
     # ------------------------------------------------------------------
-    print("  Importing mapSecondarySuns")
+    _log("  Importing mapSecondarySuns")
     count = 0
     for r in _jsonl(sourcePath, 'mapSecondarySuns.jsonl'):
         sid = r.get('solarSystemID')
@@ -436,10 +440,10 @@ def import_map(connection, metadata, sourcePath, language='en'):
             security        = 0,
         ))
         count += 1
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
     trans.commit()
-    print("Map import complete")
+    _log("Map import complete")
 
 
 def import_npc_stations(connection, metadata, sourcePath, language='en'):
@@ -455,7 +459,7 @@ def import_npc_stations(connection, metadata, sourcePath, language='en'):
 
     Requires invTypes to be loaded for groupID lookup.
     """
-    print("Importing npcStations")
+    _log("Importing npcStations")
 
     staStations    = Table('staStations', metadata)
     mapDenormalize = Table('mapDenormalize', metadata)
@@ -554,12 +558,12 @@ def import_npc_stations(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def import_station_services(connection, metadata, sourcePath, language='en'):
     """stationServices.jsonl -> staServices"""
-    print("Importing stationServices")
+    _log("Importing stationServices")
     tbl = Table('staServices', metadata)
     trans = connection.begin()
     count = 0
@@ -571,11 +575,11 @@ def import_station_services(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 def import_landmarks(connection, metadata, sourcePath, language='en'):
     """landmarks.jsonl -> mapLandmarks"""
-    print("Importing landmarks")
+    _log("Importing landmarks")
     tbl = Table('mapLandmarks', metadata)
     trans = connection.begin()
     count = 0
@@ -593,7 +597,7 @@ def import_landmarks(connection, metadata, sourcePath, language='en'):
         ))
         count += 1
     trans.commit()
-    print("    {} rows".format(count))
+    _log("    {} rows".format(count))
 
 
 def buildJumps(connection, connectiontype):
@@ -640,9 +644,9 @@ def buildJumps(connection, connectiontype):
     if connectiontype in ('sqlite', 'mysql', 'mssql'):
         connectiontype = 'other'
 
-    print("Building jump tables")
+    _log("Building jump tables")
     trans = connection.begin()
     for statement in sql[connectiontype]:
         connection.execute(text(statement))
     trans.commit()
-    print("Jump tables complete")
+    _log("Jump tables complete")
