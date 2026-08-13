@@ -679,6 +679,8 @@ def metadataCreator(schema):
             Column('techLevel', INTEGER()),
             Column('shipTreeGroupID', INTEGER()),
             Column('packagedVolume', FLOAT(precision=53)),
+            Column('isDynamicType', Boolean(name='invtype_is_dynamic_type'), nullable=True),
+            Column('isRepackable', Boolean(name='invtype_is_repackable'), nullable=True),
             schema=schema
 
 

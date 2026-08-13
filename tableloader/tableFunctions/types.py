@@ -69,7 +69,9 @@ def import_types(connection,metadata,sourcePath,language='en'):
                             metaLevel=typedata.get('metaLevel'),
                             techLevel=typedata.get('techLevel'),
                             shipTreeGroupID=typedata.get('shipTreeGroupID'),
-                            packagedVolume=typedata.get('packagedVolume'))
+                            packagedVolume=typedata.get('packagedVolume'),
+                            isDynamicType=typedata.get('isDynamicType'),
+                            isRepackable=typedata.get('isRepackable'))
         connection.execute(stmt)
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:
             stmt=insert(invMetaTypes).values(typeID=typedata['_key'],metaGroupID=typedata.get('metaGroupID'),parentTypeID=typedata.get('variationParentTypeID'))
