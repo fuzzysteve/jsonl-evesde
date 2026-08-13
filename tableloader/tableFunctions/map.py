@@ -91,6 +91,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
 
     stat_col_keys    = {c.key for c in mapCelestialStatistics.c}
     graphic_col_keys = {c.key for c in mapCelestialGraphics.c}
+    den_col_keys     = {c.key for c in mapDenormalize.c}
 
     # Pre-populate the groupID cache so planet/moon/belt/stargate loops
     # never hit the DB per-row.
@@ -456,7 +457,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     _bulk(connection, insert(mapCelestialStatistics), stat_rows)
     _bulk(connection, insert(mapCelestialGraphics), graphic_rows)
     _bulk(connection, insert(mapJumps), jump_rows)
-    _bulk(connection, insert(mapDenormalize), den_rows)
+    _bulk(connection, insert(mapDenormalize), [_norm(r, den_col_keys) for r in den_rows])
     _bulk(connection, insert(mapLocationWormholeClasses), wh_rows)
     trans.commit()
     _log("Map import complete")
