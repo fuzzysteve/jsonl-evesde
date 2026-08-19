@@ -1590,7 +1590,7 @@ def metadataCreator(schema):
         Column('title',                        VARCHAR(length=255), nullable=True),
         Column('subtitle',                     UnicodeText(),       nullable=True),
         Column('careerPath',                   VARCHAR(length=100), nullable=True),
-        Column('targetProgress',               INTEGER(),           nullable=True),
+        Column('targetProgress',               BIGINT(),            nullable=True),
         Column('maxProgressPerParticipant',    INTEGER(),           nullable=True),
         Column('presentingCharacterID',        INTEGER(),           nullable=True),
         Column('issuerCorporationID',          INTEGER(),           nullable=True),
@@ -1642,10 +1642,19 @@ def metadataCreator(schema):
     ramAssemblyLines = Table('ramAssemblyLines', metadata,
         Column('assemblyLineID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('activityID',              INTEGER(), nullable=True),
+        Column('baseCostMultiplier',      FLOAT(precision=53), nullable=True),
         Column('baseMaterialMultiplier',  FLOAT(precision=53), nullable=True),
         Column('baseTimeMultiplier',      FLOAT(precision=53), nullable=True),
         Column('name',                    VARCHAR(length=100), nullable=True),
         Column('description',             UnicodeText(), nullable=True),
+        schema=schema
+    )
+
+    ramAssemblyLineTypeDetailPerTypeList = Table('ramAssemblyLineTypeDetailPerTypeList', metadata,
+        Column('assemblyLineTypeID',   INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('typeListID',           INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('materialMultiplier',   FLOAT(precision=53), nullable=True),
+        Column('timeMultiplier',       FLOAT(precision=53), nullable=True),
         schema=schema
     )
 

@@ -36,17 +36,20 @@ def import_industry_activities(connection, metadata, sourcePath, language='en'):
 
 
 def import_industry_assembly_lines(connection, metadata, sourcePath, language='en'):
-    """industryAssemblyLines.jsonl -> ramAssemblyLines + ramAssemblyLineTypeDetailPerGroup"""
+    """industryAssemblyLines.jsonl -> ramAssemblyLines + child detail tables"""
     _log("Importing industryAssemblyLines")
-    tbl_lines  = Table('ramAssemblyLines', metadata)
-    tbl_groups = Table('ramAssemblyLineTypeDetailPerGroup', metadata)
+    tbl_lines      = Table('ramAssemblyLines', metadata)
+    tbl_groups     = Table('ramAssemblyLineTypeDetailPerGroup', metadata)
+    tbl_categories = Table('ramAssemblyLineTypeDetailPerCategory', metadata)
+    tbl_typelists  = Table('ramAssemblyLineTypeDetailPerTypeList', metadata)
     trans = connection.begin()
-    lines = groups = 0
+    lines = groups = categories = typelists = 0
     for r in _jsonl(sourcePath, 'industryAssemblyLines.jsonl'):
         line_id = r['_key']
         connection.execute(insert(tbl_lines).values(
             assemblyLineID           = line_id,
             activityID               = r.get('activityID'),
+            baseCostMultiplier       = r.get('baseCostMultiplier'),
             baseMaterialMultiplier   = r.get('baseMaterialMultiplier'),
             baseTimeMultiplier       = r.get('baseTimeMultiplier'),
             name                     = r.get('name'),
@@ -62,8 +65,26 @@ def import_industry_assembly_lines(connection, metadata, sourcePath, language='e
                 timeMultiplier      = grp.get('timeMultiplier'),
             ))
             groups += 1
+        for cat in r.get('detailsPerCategory') or []:
+            connection.execute(insert(tbl_categories).values(
+                assemblyLineTypeID  = line_id,
+                categoryID          = cat['categoryID'],
+                costMultiplier      = cat.get('costMultiplier'),
+                materialMultiplier  = cat.get('materialMultiplier'),
+                timeMultiplier      = cat.get('timeMultiplier'),
+            ))
+            categories += 1
+        for tl in r.get('detailsPerTypeList') or []:
+            connection.execute(insert(tbl_typelists).values(
+                assemblyLineTypeID  = line_id,
+                typeListID          = tl['typeListID'],
+                materialMultiplier  = tl.get('materialMultiplier'),
+                timeMultiplier      = tl.get('timeMultiplier'),
+            ))
+            typelists += 1
     trans.commit()
-    _log("    {} assembly lines, {} group-detail rows".format(lines, groups))
+    _log("    {} assembly lines, {} group rows, {} category rows, {} type-list rows".format(
+        lines, groups, categories, typelists))
 
 
 def import_industry_installation_types(connection, metadata, sourcePath, language='en'):

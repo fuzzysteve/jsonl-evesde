@@ -612,7 +612,7 @@ LOADERS = [
     {
         'module_name': 'industryassemblylines',
         'files': ['industryassemblylines.jsonl'],
-        'tables': ['ramAssemblyLines', 'ramAssemblyLineTypeDetailPerGroup'],
+        'tables': ['ramAssemblyLines', 'ramAssemblyLineTypeDetailPerGroup', 'ramAssemblyLineTypeDetailPerCategory', 'ramAssemblyLineTypeDetailPerTypeList'],
         'calls': [
             lambda: industry.import_industry_assembly_lines(connection, metadata, sourcePath, language),
         ],

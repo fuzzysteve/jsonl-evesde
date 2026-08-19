@@ -7,7 +7,8 @@
             { "name": "MySQL",           "value": "[latest-mysql.sql.gz]($WEB_ROOT_URL/latest-mysql.sql.gz)",                      "inline": true },
             { "name": "PostgreSQL",      "value": "[latest-postgres.pgdump]($WEB_ROOT_URL/latest-postgres.pgdump)",                "inline": true },
             { "name": "PostgreSQL (schema)", "value": "[latest-postgresschema.pgdump]($WEB_ROOT_URL/latest-postgresschema.pgdump)","inline": true },
-            { "name": "MSSQL",           "value": "[latest-mssql.bak]($WEB_ROOT_URL/latest-mssql.bak)",                           "inline": true }
+            { "name": "MSSQL",           "value": "[latest-mssql.bak]($WEB_ROOT_URL/latest-mssql.bak)",                           "inline": true },
+            { "name": "Changed files",   "value": "$GIT_STATS" }
         ]
     }]
 }

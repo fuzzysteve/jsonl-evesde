@@ -324,8 +324,14 @@ log "=== Cleaning up old builds ==="
 python3 "$SCRIPT_DIR/cleanup_builds.py"
 
 if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
-    PAYLOAD=$(LATEST_BUILD="$LATEST_BUILD" WEB_ROOT_URL="$WEB_ROOT_URL" \
-              envsubst '$LATEST_BUILD $WEB_ROOT_URL' < "$SCRIPT_DIR/discord-notification.json")
+    GIT_STATS=""
+    if GIT_STATS=$(python3 "$SCRIPT_DIR/sde_changes.py" "$LATEST_BUILD" "${LAST_BUILD:-}" 2>/dev/null); then
+        : # fetched successfully
+    else
+        GIT_STATS="Build $LATEST_BUILD"
+    fi
+    PAYLOAD=$(LATEST_BUILD="$LATEST_BUILD" WEB_ROOT_URL="$WEB_ROOT_URL" GIT_STATS="$GIT_STATS" \
+              envsubst '$LATEST_BUILD $WEB_ROOT_URL $GIT_STATS' < "$SCRIPT_DIR/discord-notification.json")
     curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
         -H "Content-Type: application/json" \
         -d "$PAYLOAD"
