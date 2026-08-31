@@ -114,6 +114,7 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
             corporationName    = _en(r.get('name', {}), language),
             description        = _en(r.get('description', {}), language),
             iconID             = r.get('iconID'),
+            tickerName         = r.get('tickerName'),
             **inv,
         ))
 

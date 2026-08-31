@@ -61,12 +61,13 @@ def collect_chain(current_build, last_build):
         for r in records:
             key = r["_key"]
             if key not in agg:
-                agg[key] = {"schemaChanged": False, "added": 0, "removed": 0, "reworked": 0}
+                agg[key] = {"schemaChanged": False, "added": 0, "removed": 0, "reworked": 0, "changed": 0}
             if r.get("schemaChanged"):
                 agg[key]["schemaChanged"] = True
             agg[key]["added"]    += len(r.get("added")    or [])
             agg[key]["removed"]  += len(r.get("removed")  or [])
             agg[key]["reworked"] += len(r.get("reworked") or [])
+            agg[key]["changed"]  += len(r.get("changed")  or [])
 
         if meta is None:
             break
@@ -98,8 +99,10 @@ def summarise(builds, agg, last_build):
             parts.append(f"-{c['removed']} removed")
         if c["reworked"]:
             parts.append(f"~{c['reworked']} reworked")
+        if c["changed"]:
+            parts.append(f"~{c['changed']} changed")
         if not parts:
-            parts.append("changed")
+            parts.append("updated")
         lines.append(f"  {key}: {', '.join(parts)}")
 
     if not agg:

@@ -234,6 +234,7 @@ def metadataCreator(schema):
             Column('description', VARCHAR(length=4000)),
             Column('iconID', INTEGER()),
             Column('corporationName', VARCHAR(length=100)),
+            Column('tickerName', VARCHAR(length=10), nullable=True),
             schema=schema
 
 

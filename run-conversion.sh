@@ -332,7 +332,13 @@ if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     fi
     PAYLOAD=$(LATEST_BUILD="$LATEST_BUILD" WEB_ROOT_URL="$WEB_ROOT_URL" GIT_STATS="$GIT_STATS" \
               envsubst '$LATEST_BUILD $WEB_ROOT_URL $GIT_STATS' < "$SCRIPT_DIR/discord-notification.json")
-    curl -sf -X POST "$DISCORD_WEBHOOK_URL" \
+    _DISCORD_STATUS=$(curl -s -o /tmp/discord_response.tmp -w "%{http_code}" \
+        -X POST "$DISCORD_WEBHOOK_URL" \
         -H "Content-Type: application/json" \
-        -d "$PAYLOAD"
+        -d "$PAYLOAD")
+    if [ "$_DISCORD_STATUS" != "204" ]; then
+        log "Discord webhook failed: HTTP $_DISCORD_STATUS"
+        log "  Response: $(cat /tmp/discord_response.tmp)"
+    fi
+    rm -f /tmp/discord_response.tmp
 fi
