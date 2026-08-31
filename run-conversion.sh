@@ -21,10 +21,13 @@ source "$CONFIG_FILE"
 # ---------------------------------------------------------------------------
 FORCE=0
 REPROCESS=0
-for arg in "$@"; do
-    case "$arg" in
-        --force)      FORCE=1 ;;
-        --reprocess)  REPROCESS=1 ;;
+DISCORD_COMMENT=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)      FORCE=1; shift ;;
+        --reprocess)  REPROCESS=1; shift ;;
+        --comment)    DISCORD_COMMENT="$2"; shift 2 ;;
+        *)            shift ;;
     esac
 done
 
@@ -332,6 +335,14 @@ if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     fi
     PAYLOAD=$(LATEST_BUILD="$LATEST_BUILD" WEB_ROOT_URL="$WEB_ROOT_URL" GIT_STATS="$GIT_STATS" \
               envsubst '$LATEST_BUILD $WEB_ROOT_URL $GIT_STATS' < "$SCRIPT_DIR/discord-notification.json")
+    if [ -n "${DISCORD_COMMENT:-}" ]; then
+        PAYLOAD=$(python3 -c "
+import json, sys
+p = json.loads(sys.stdin.read())
+p['embeds'][0]['fields'].append({'name': 'Note', 'value': sys.argv[1]})
+print(json.dumps(p))
+" "$DISCORD_COMMENT" <<< "$PAYLOAD")
+    fi
     _DISCORD_STATUS=$(curl -s -o /tmp/discord_response.tmp -w "%{http_code}" \
         -X POST "$DISCORD_WEBHOOK_URL" \
         -H "Content-Type: application/json" \
