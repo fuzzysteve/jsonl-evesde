@@ -71,6 +71,8 @@ def collect_chain(current_build, last_build):
 
         if meta is None:
             break
+        if stop is None:
+            break  # no target build: just report this one build
         prev = str(meta.get("lastBuildNumber", ""))
         if not prev or prev == stop:
             break

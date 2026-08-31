@@ -328,7 +328,11 @@ python3 "$SCRIPT_DIR/cleanup_builds.py"
 
 if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     GIT_STATS=""
-    if GIT_STATS=$(python3 "$SCRIPT_DIR/sde_changes.py" "$LATEST_BUILD" "${LAST_BUILD:-}" 2>/dev/null); then
+    # Pass empty last_build when force-running on the same build, so sde_changes.py
+    # reports just this build's own changes rather than walking 20 builds back.
+    _SDE_LAST="${LAST_BUILD:-}"
+    [ "$_SDE_LAST" = "$LATEST_BUILD" ] && _SDE_LAST=""
+    if GIT_STATS=$(python3 "$SCRIPT_DIR/sde_changes.py" "$LATEST_BUILD" "$_SDE_LAST" 2>/dev/null); then
         : # fetched successfully
     else
         GIT_STATS="Build $LATEST_BUILD"
