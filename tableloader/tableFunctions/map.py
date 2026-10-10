@@ -237,6 +237,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             securityClass = r.get('securityClass'),
             position2Dx   = p2d.get('x'),
             position2Dy   = p2d.get('y'),
+            visualEffect  = r.get('visualEffect'),
         ))
         den_rows.append(dict(
             itemID          = r['_key'],

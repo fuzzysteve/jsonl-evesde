@@ -115,6 +115,8 @@ def import_bonus(connection, metadata, sourcePath, language='en'):
                 bonus     = rolebonus.get('bonus'),
                 bonusText = (rolebonus.get('bonusText') or {}).get(language, ''),
                 unitID    = rolebonus.get('unitID'),
+                importance = rolebonus.get('importance'),
+                isPositive = rolebonus.get('isPositive'),
             ))
         for skillbonus in typedata.get('types', []):
             for skill in skillbonus['_value']:
@@ -124,7 +126,20 @@ def import_bonus(connection, metadata, sourcePath, language='en'):
                     bonus     = skill.get('bonus'),
                     bonusText = (skill.get('bonusText') or {}).get(language, ''),
                     unitID    = skill.get('unitID'),
+                    importance = skill.get('importance'),
+                    isPositive = skill.get('isPositive'),
                 ))
+        # skillID -2 marks misc bonuses, as -1 marks role bonuses
+        for miscbonus in typedata.get('miscBonuses') or []:
+            rows.append(dict(
+                typeID    = key,
+                skillID   = -2,
+                bonus     = miscbonus.get('bonus'),
+                bonusText = (miscbonus.get('bonusText') or {}).get(language, ''),
+                unitID    = miscbonus.get('unitID'),
+                importance = miscbonus.get('importance'),
+                isPositive = miscbonus.get('isPositive'),
+            ))
     _bulk(connection, insert(invTraits), rows)
     trans.commit()
 

@@ -154,6 +154,7 @@ def import_expert_systems(connection, metadata, sourcePath, language='en'):
     _log("Importing expertSystems")
     tbl_es    = Table('expertSystems', metadata)
     tbl_skills = Table('expertSystemSkillsGranted', metadata)
+    tbl_ships  = Table('expertSystemShipTypes', metadata)
     trans = connection.begin()
     systems = skills = 0
     for r in _jsonl(sourcePath, 'expertSystems.jsonl'):
@@ -173,5 +174,7 @@ def import_expert_systems(connection, metadata, sourcePath, language='en'):
                 level       = sg.get('level'),
             ))
             skills += 1
+        for shipTypeID in r.get('associatedShipTypes') or []:
+            connection.execute(insert(tbl_ships).values(typeID=tid, shipTypeID=shipTypeID))
     trans.commit()
     _log("    {} expert systems, {} skill rows".format(systems, skills))

@@ -35,6 +35,7 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
     _log("Importing certificates")
     certCerts             = Table('certCerts', metadata)
     certSkills            = Table('certSkills', metadata)
+    certRecommendedTypes  = Table('certRecommendedTypes', metadata)
     trnTranslations       = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
@@ -49,6 +50,8 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
             name        = _en(r.get('name', {}), language),
         ))
         certs += 1
+        for typeID in r.get('recommendedFor') or []:
+            connection.execute(insert(certRecommendedTypes).values(certID=certID, typeID=typeID))
         for skill in r.get('skillTypes', []):
             skillID = skill['_key']
             for levelText, certLevelInt in _CERT_LEVELS.items():

@@ -68,7 +68,9 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
         crpNPCCorporations
         crpNPCCorporationDivisions
         crpNPCCorporationTrades
-        crpNPCCorporationResearchFields (via lpOfferTables — not in source; skipped)
+        crpNPCCorporationLPOfferTables
+        crpNPCCorporationAllowedRaces
+        crpNPCCorporationExchangeRates
         trnTranslations
     """
     _log("Importing npcCorporations")
@@ -76,6 +78,9 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
     tbl                   = Table('crpNPCCorporations', metadata)
     tblDivs               = Table('crpNPCCorporationDivisions', metadata)
     tblTrades             = Table('crpNPCCorporationTrades', metadata)
+    tblLPOffers           = Table('crpNPCCorporationLPOfferTables', metadata)
+    tblRaces              = Table('crpNPCCorporationAllowedRaces', metadata)
+    tblExchange           = Table('crpNPCCorporationExchangeRates', metadata)
     trnTranslations       = Table('trnTranslations', metadata)
     trnTranslationColumns = Table('trnTranslationColumns', metadata)
 
@@ -115,6 +120,10 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
             description        = _en(r.get('description', {}), language),
             iconID             = r.get('iconID'),
             tickerName         = r.get('tickerName'),
+            ceoID              = r.get('ceoID'),
+            mainActivityID     = r.get('mainActivityID'),
+            secondaryActivityID = r.get('secondaryActivityID'),
+            taxRate            = r.get('taxRate'),
             **inv,
         ))
 
@@ -123,9 +132,10 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
                 corporationID = corpID,
                 divisionID    = div['_key'],
                 size          = div.get('size'),
+                divisionNumber = div.get('divisionNumber'),
+                leaderID      = div.get('leaderID'),
             ))
 
-        # corporationTrades: only typeID is stored; the _value (standing modifier) has no column
         seen_trades = set()
         for trade in r.get('corporationTrades', []):
             typeID = trade['_key']
@@ -134,7 +144,21 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
                 connection.execute(insert(tblTrades).values(
                     corporationID = corpID,
                     typeID        = typeID,
+                    value         = trade.get('_value'),
                 ))
+
+        for lpTableID in r.get('lpOfferTables') or []:
+            connection.execute(insert(tblLPOffers).values(corporationID=corpID, lpOfferTableID=lpTableID))
+
+        for raceID in r.get('allowedMemberRaces') or []:
+            connection.execute(insert(tblRaces).values(corporationID=corpID, raceID=raceID))
+
+        for rate in r.get('exchangeRates') or []:
+            connection.execute(insert(tblExchange).values(
+                corporationID   = corpID,
+                toCorporationID = rate['_key'],
+                rate            = rate['_value'],
+            ))
 
         corps += 1
         for lang, text in r.get('name', {}).items():

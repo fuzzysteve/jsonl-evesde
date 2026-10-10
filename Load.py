@@ -224,7 +224,10 @@ LOADERS = [
     {
         'module_name': 'npccorporations',
         'files': ['npccorporations.jsonl'],
-        'tables': ['crpNPCCorporations', 'crpNPCCorporationDivisions', 'crpNPCCorporationTrades'],
+        'tables': [
+            'crpNPCCorporations', 'crpNPCCorporationDivisions', 'crpNPCCorporationTrades',
+            'crpNPCCorporationLPOfferTables', 'crpNPCCorporationAllowedRaces', 'crpNPCCorporationExchangeRates',
+        ],
         'trnTranslations_tcIDs': [20],
         'calls': [
             lambda: npccorporations.import_npc_corporations(connection, metadata, sourcePath, language),
@@ -335,7 +338,7 @@ LOADERS = [
     {
         'module_name': 'certificates',
         'files': ['certificates.jsonl'],
-        'tables': ['certCerts', 'certSkills'],
+        'tables': ['certCerts', 'certSkills', 'certRecommendedTypes'],
         'trnTranslations_tcIDs': [17],
         'calls': [
             lambda: certificates.import_certificates(connection, metadata, sourcePath, language),
@@ -744,7 +747,7 @@ LOADERS = [
     {
         'module_name': 'expertsystems',
         'files': ['expertsystems.jsonl'],
-        'tables': ['expertSystems', 'expertSystemSkillsGranted'],
+        'tables': ['expertSystems', 'expertSystemSkillsGranted', 'expertSystemShipTypes'],
         'calls': [
             lambda: schools.import_expert_systems(connection, metadata, sourcePath, language),
         ],

@@ -58,6 +58,11 @@ def import_dogma_attributes(connection, metadata, sourcePath, language='en'):
             categoryID    = r.get('attributeCategoryID'),
             maxAttributeID = r.get('maxAttributeID'),
             minAttributeID = r.get('minAttributeID'),
+            chargeRechargeTimeID = r.get('chargeRechargeTimeID'),
+            dataType       = r.get('dataType'),
+            displayWhenZero = r.get('displayWhenZero'),
+            tooltipTitle   = _en(r.get('tooltipTitle'), language),
+            tooltipDescription = _en(r.get('tooltipDescription'), language),
         ))
     trans.commit()
 
@@ -98,6 +103,7 @@ def import_dogma_effects(connection, metadata, sourcePath, language='en'):
             npcActivationChanceAttributeID = r.get('npcActivationChanceAttributeID'),
             fittingUsageChanceAttributeID  = r.get('fittingUsageChanceAttributeID'),
             modifierInfo                   = json.dumps(modifier_info) if modifier_info else None,
+            resistanceAttributeID          = r.get('resistanceAttributeID'),
         ))
     trans.commit()
 

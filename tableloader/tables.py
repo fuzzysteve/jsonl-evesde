@@ -76,6 +76,13 @@ def metadataCreator(schema):
             Column('skillLevel', INTEGER()),
             Column('certLevelText', VARCHAR(length=8)),
             schema=schema
+    )
+
+
+    certRecommendedTypes =  Table('certRecommendedTypes', metadata,
+            Column('certID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('typeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            schema=schema
 
 
     )
@@ -180,6 +187,8 @@ def metadataCreator(schema):
             Column('corporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('divisionID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('size', INTEGER()),
+            Column('divisionNumber', INTEGER()),
+            Column('leaderID', INTEGER()),
             schema=schema
 
 
@@ -198,9 +207,32 @@ def metadataCreator(schema):
     crpNPCCorporationTrades =  Table('crpNPCCorporationTrades', metadata,
             Column('corporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('typeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('value', FLOAT(precision=53)),
             schema=schema
 
 
+    )
+
+
+    crpNPCCorporationLPOfferTables =  Table('crpNPCCorporationLPOfferTables', metadata,
+            Column('corporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('lpOfferTableID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            schema=schema
+    )
+
+
+    crpNPCCorporationAllowedRaces =  Table('crpNPCCorporationAllowedRaces', metadata,
+            Column('corporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('raceID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            schema=schema
+    )
+
+
+    crpNPCCorporationExchangeRates =  Table('crpNPCCorporationExchangeRates', metadata,
+            Column('corporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('toCorporationID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('rate', FLOAT(precision=53)),
+            schema=schema
     )
 
 
@@ -235,6 +267,10 @@ def metadataCreator(schema):
             Column('iconID', INTEGER()),
             Column('corporationName', VARCHAR(length=100)),
             Column('tickerName', VARCHAR(length=10), nullable=True),
+            Column('ceoID', INTEGER()),
+            Column('mainActivityID', INTEGER()),
+            Column('secondaryActivityID', INTEGER()),
+            Column('taxRate', FLOAT(precision=53)),
             schema=schema
 
 
@@ -276,6 +312,11 @@ def metadataCreator(schema):
             Column('categoryID', INTEGER()),
             Column('maxAttributeID', INTEGER()),
             Column('minAttributeID', INTEGER()),
+            Column('chargeRechargeTimeID', INTEGER()),
+            Column('dataType', INTEGER()),
+            Column('displayWhenZero', Boolean(name='dat_dwz')),
+            Column('tooltipTitle', VARCHAR(length=255)),
+            Column('tooltipDescription', UnicodeText()),
             schema=schema
 
 
@@ -329,6 +370,7 @@ def metadataCreator(schema):
             Column('npcActivationChanceAttributeID', INTEGER()),
             Column('fittingUsageChanceAttributeID', INTEGER()),
             Column('modifierInfo',UnicodeText()),
+            Column('resistanceAttributeID', INTEGER()),
             schema=schema
 
 
@@ -652,6 +694,8 @@ def metadataCreator(schema):
             Column('bonus', FLOAT()),
             Column('bonusText',UnicodeText()),
             Column('unitID', INTEGER()),
+            Column('importance', INTEGER()),
+            Column('isPositive', Boolean(name='it_ispos')),
             schema=schema
 
 
@@ -940,6 +984,7 @@ def metadataCreator(schema):
             Column('securityClass', VARCHAR(length=2)),
             Column('position2Dx', FLOAT(precision=53)),
             Column('position2Dy', FLOAT(precision=53)),
+            Column('visualEffect', VARCHAR(length=50)),
             schema=schema
     )
 
@@ -1868,6 +1913,12 @@ def metadataCreator(schema):
         Column('typeID',      INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('skillTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('level',       INTEGER(), nullable=True),
+        schema=schema
+    )
+
+    expertSystemShipTypes = Table('expertSystemShipTypes', metadata,
+        Column('typeID',     INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('shipTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         schema=schema
     )
 
