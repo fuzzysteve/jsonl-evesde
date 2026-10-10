@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, delete
+from sqlalchemy import create_engine, Table, delete, inspect
 import warnings
 import configparser, os
 import sys
@@ -83,7 +83,7 @@ LOADERS = [
     {
         'module_name': 'typematerials',
         'files': ['typematerials.jsonl'],
-        'tables': ['invTypeMaterials'],
+        'tables': ['invTypeMaterials', 'invTypeRandomizedMaterials'],
         'calls': [
             lambda: types.import_materials(connection, metadata, sourcePath, language),
         ],
@@ -177,6 +177,14 @@ LOADERS = [
         ],
     },
     {
+        'module_name': 'dynamicitemattributes',
+        'files': ['dynamicitemattributes.jsonl'],
+        'tables': ['dynamicItemAttributes', 'dynamicItemAttributeMappings'],
+        'calls': [
+            lambda: dogma.import_dynamic_item_attributes(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
         'module_name': 'shipskills',
         'files': [],
         'tables': ['shipSkills'],
@@ -234,7 +242,7 @@ LOADERS = [
             'mapRegions', 'mapConstellations', 'mapSolarSystems', 'mapDenormalize',
             'mapCelestialStatistics', 'mapCelestialGraphics', 'mapJumps',
             'mapLocationWormholeClasses', 'mapLandmarks', 'staStations', 'staServices',
-            'mapSolarSystemDisallowedAnchors',
+            'mapSolarSystemDisallowedAnchors', 'mapSecondarySuns',
         ],
         'calls': [
             lambda: map.import_map(connection, metadata, sourcePath, language),
@@ -783,6 +791,17 @@ LOADERS = [
         ],
     },
     {
+        'module_name': 'dbuffcollections',
+        'files': ['dbuffcollections.jsonl'],
+        'tables': [
+            'dbuffCollections', 'dbuffItemModifiers', 'dbuffLocationModifiers',
+            'dbuffLocationGroupModifiers', 'dbuffLocationRequiredSkillModifiers',
+        ],
+        'calls': [
+            lambda: typeeffects.import_dbuff_collections(connection, metadata, sourcePath, language),
+        ],
+    },
+    {
         'module_name': 'metenoxmoondrill',
         'files': ['metenoxmoondrill.jsonl'],
         'tables': ['metenoxMoonDrills'],
@@ -809,6 +828,15 @@ LOADERS = [
             lambda: skinr.import_skinr_slots_to_materials(connection, metadata, sourcePath, language),
         ],
     },
+    # --- SDE build metadata ---
+    {
+        'module_name': 'sdeinfo',
+        'files': ['_sde.jsonl'],
+        'tables': ['sdeInfo'],
+        'calls': [
+            lambda: sdeinfo.import_sde_info(connection, metadata, sourcePath, language),
+        ],
+    },
 ]
 
 
@@ -821,6 +849,19 @@ def _resolve_tables(table_names):
         if tbl is not None:
             result.append(tbl)
     return result
+
+
+def _schema_out_of_date(loader):
+    """True if any of the loader's tables is missing from the DB, or lacks a
+    column defined in tables.py — i.e. the schema changed since the DB was built."""
+    inspector = inspect(engine)
+    for tbl in _resolve_tables(loader['tables']):
+        if not inspector.has_table(tbl.name, schema=tbl.schema):
+            return True
+        existing = {c['name'] for c in inspector.get_columns(tbl.name, schema=tbl.schema)}
+        if any(c.name not in existing for c in tbl.columns):
+            return True
+    return False
 
 
 def _run_full():
@@ -847,6 +888,9 @@ def _run_update():
         triggered = any(f.lower() in _changed_files for f in loader['files'])
         if not triggered and loader.get('depends_on_modules'):
             triggered = bool(ran_modules & set(loader['depends_on_modules']))
+        if not triggered and _schema_out_of_date(loader):
+            print(f"Update: module '{loader['module_name']}' has missing tables/columns")
+            triggered = True
         if not triggered:
             continue
 

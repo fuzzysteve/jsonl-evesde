@@ -131,9 +131,11 @@ def import_bonus(connection, metadata, sourcePath, language='en'):
 
 def import_materials(connection, metadata, sourcePath, language='en'):
     invTypeMaterials = Table('invTypeMaterials', metadata)
+    invTypeRandomizedMaterials = Table('invTypeRandomizedMaterials', metadata)
     _log("Importing materials")
     trans = connection.begin()
     rows = []
+    random_rows = []
     for typedata in _jsonl(sourcePath, 'typeMaterials.jsonl'):
         key = typedata['_key']
         for material in typedata.get('materials', []):
@@ -142,7 +144,15 @@ def import_materials(connection, metadata, sourcePath, language='en'):
                 materialTypeID = material['materialTypeID'],
                 quantity       = material['quantity'],
             ))
+        for material in typedata.get('randomizedMaterials') or []:
+            random_rows.append(dict(
+                typeID         = key,
+                materialTypeID = material['materialTypeID'],
+                quantityMin    = material.get('quantityMin'),
+                quantityMax    = material.get('quantityMax'),
+            ))
     _bulk(connection, insert(invTypeMaterials), rows)
+    _bulk(connection, insert(invTypeRandomizedMaterials), random_rows)
     trans.commit()
 
 

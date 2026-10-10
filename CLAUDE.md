@@ -10,7 +10,7 @@ Always use `.venv/bin/python`, never system `python3`. SQLAlchemy and all DB dri
 
 The loader pipeline has two modes:
 - **Full mode** (default): `drop_all` → `create_all` → run every loader in `LOADERS` order.
-- **Update mode** (`SDE_CHANGED_FILES` env var set): for each loader whose JSONL files appear in the changed set, delete trnTranslations rows by tcID, drop/recreate only that loader's tables, then run its calls. Derived loaders (shipskills, buildjumps, invnames) fire when any of their `depends_on_modules` ran.
+- **Update mode** (`SDE_CHANGED_FILES` env var set): for each loader whose JSONL files appear in the changed set, delete trnTranslations rows by tcID, drop/recreate only that loader's tables, then run its calls. Derived loaders (shipskills, buildjumps, invnames) fire when any of their `depends_on_modules` ran. A loader also fires if any of its `tables` is missing from the DB or lacks a column defined in `tables.py`, so new tables/columns reach an existing database on the next update run without a full rebuild.
 
 ## Key patterns
 

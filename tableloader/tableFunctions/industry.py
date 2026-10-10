@@ -123,6 +123,7 @@ def import_industry_modifier_sources(connection, metadata, sourcePath, language=
                         activityName     = activity,
                         modifierType     = mod_type,
                         dogmaAttributeID = attr['dogmaAttributeID'],
+                        filterID         = attr.get('filterID'),
                     ))
                     count += 1
     trans.commit()

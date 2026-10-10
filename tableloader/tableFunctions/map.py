@@ -89,6 +89,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     mapJumps                   = Table('mapJumps', metadata)
     mapLocationWormholeClasses = Table('mapLocationWormholeClasses', metadata)
     mapSolarSystemDisallowedAnchors = Table('mapSolarSystemDisallowedAnchors', metadata)
+    mapSecondarySuns           = Table('mapSecondarySuns', metadata)
 
     stat_col_keys    = {c.key for c in mapCelestialStatistics.c}
     graphic_col_keys = {c.key for c in mapCelestialGraphics.c}
@@ -141,6 +142,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     jump_rows    = []   # mapJumps
     wh_rows      = []   # mapLocationWormholeClasses
     anchor_rows  = []   # mapSolarSystemDisallowedAnchors
+    sec_sun_rows = []   # mapSecondarySuns
 
     # ------------------------------------------------------------------
     # mapRegions
@@ -451,6 +453,12 @@ def import_map(connection, metadata, sourcePath, language='en'):
             itemName        = 'Unknown Anomaly',
             security        = 0,
         ))
+        sec_sun_rows.append(dict(
+            itemID             = r['_key'],
+            solarSystemID      = sid,
+            typeID             = r.get('typeID'),
+            effectBeaconTypeID = r.get('effectBeaconTypeID'),
+        ))
         sec_sun_count += 1
     _log("    {} rows".format(sec_sun_count))
 
@@ -467,6 +475,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     _bulk(connection, insert(mapDenormalize), [_norm(r, den_col_keys) for r in den_rows])
     _bulk(connection, insert(mapLocationWormholeClasses), wh_rows)
     _bulk(connection, insert(mapSolarSystemDisallowedAnchors), anchor_rows)
+    _bulk(connection, insert(mapSecondarySuns), sec_sun_rows)
     trans.commit()
     _log("Map import complete")
 

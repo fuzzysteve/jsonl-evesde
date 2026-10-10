@@ -56,6 +56,8 @@ def import_dogma_attributes(connection, metadata, sourcePath, language='en'):
             stackable     = r.get('stackable'),
             highIsGood    = r.get('highIsGood'),
             categoryID    = r.get('attributeCategoryID'),
+            maxAttributeID = r.get('maxAttributeID'),
+            minAttributeID = r.get('minAttributeID'),
         ))
     trans.commit()
 
@@ -113,3 +115,33 @@ def import_dogma_units(connection, metadata, sourcePath, language='en'):
             description = _en(r.get('description'), language),
         ))
     trans.commit()
+
+
+def import_dynamic_item_attributes(connection, metadata, sourcePath, language='en'):
+    """dynamicItemAttributes.jsonl -> dynamicItemAttributes + dynamicItemAttributeMappings"""
+    _log("Importing dynamicItemAttributes")
+    tbl_attr = Table('dynamicItemAttributes', metadata)
+    tbl_map  = Table('dynamicItemAttributeMappings', metadata)
+    trans = connection.begin()
+    attrs = mappings = 0
+    for r in _jsonl(sourcePath, 'dynamicItemAttributes.jsonl'):
+        tid = r['_key']
+        for a in r.get('attributeIDs') or []:
+            connection.execute(insert(tbl_attr).values(
+                typeID      = tid,
+                attributeID = a['_key'],
+                min         = a.get('min'),
+                max         = a.get('max'),
+                highIsGood  = a.get('highIsGood'),
+            ))
+            attrs += 1
+        for m in r.get('inputOutputMapping') or []:
+            for applicable in m.get('applicableTypes') or []:
+                connection.execute(insert(tbl_map).values(
+                    typeID           = tid,
+                    applicableTypeID = applicable,
+                    resultingTypeID  = m.get('resultingType'),
+                ))
+                mappings += 1
+    trans.commit()
+    _log("    {} attribute rows, {} mapping rows".format(attrs, mappings))

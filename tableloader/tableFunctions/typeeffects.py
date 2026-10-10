@@ -152,3 +152,43 @@ def import_metenox_moon_drills(connection, metadata, sourcePath, language='en'):
         count += 1
     trans.commit()
     _log("    {} rows".format(count))
+
+
+def import_dbuff_collections(connection, metadata, sourcePath, language='en'):
+    """dbuffCollections.jsonl -> dbuffCollections + dbuff*Modifiers"""
+    _log("Importing dbuffCollections")
+    tbl_main      = Table('dbuffCollections', metadata)
+    tbl_item      = Table('dbuffItemModifiers', metadata)
+    tbl_loc       = Table('dbuffLocationModifiers', metadata)
+    tbl_loc_group = Table('dbuffLocationGroupModifiers', metadata)
+    tbl_loc_skill = Table('dbuffLocationRequiredSkillModifiers', metadata)
+    trans = connection.begin()
+    main = mods = 0
+    for r in _jsonl(sourcePath, 'dbuffCollections.jsonl'):
+        did = r['_key']
+        name = r.get('displayName') or {}
+        connection.execute(insert(tbl_main).values(
+            dbuffID              = did,
+            displayName          = name.get(language) or name.get('en'),
+            developerDescription = r.get('developerDescription'),
+            aggregateMode        = r.get('aggregateMode'),
+            operationName        = r.get('operationName'),
+            showOutputValueInUI  = r.get('showOutputValueInUI'),
+        ))
+        main += 1
+        for m in r.get('itemModifiers') or []:
+            connection.execute(insert(tbl_item).values(dbuffID=did, dogmaAttributeID=m['dogmaAttributeID']))
+            mods += 1
+        for m in r.get('locationModifiers') or []:
+            connection.execute(insert(tbl_loc).values(dbuffID=did, dogmaAttributeID=m['dogmaAttributeID']))
+            mods += 1
+        for m in r.get('locationGroupModifiers') or []:
+            connection.execute(insert(tbl_loc_group).values(
+                dbuffID=did, dogmaAttributeID=m['dogmaAttributeID'], groupID=m['groupID']))
+            mods += 1
+        for m in r.get('locationRequiredSkillModifiers') or []:
+            connection.execute(insert(tbl_loc_skill).values(
+                dbuffID=did, dogmaAttributeID=m['dogmaAttributeID'], skillID=m['skillID']))
+            mods += 1
+    trans.commit()
+    _log("    {} collections, {} modifier rows".format(main, mods))

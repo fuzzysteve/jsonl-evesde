@@ -274,9 +274,29 @@ def metadataCreator(schema):
             Column('stackable', Boolean(name='dat_stack')),
             Column('highIsGood', Boolean(name='dat_hig')),
             Column('categoryID', INTEGER()),
+            Column('maxAttributeID', INTEGER()),
+            Column('minAttributeID', INTEGER()),
             schema=schema
 
 
+    )
+
+
+    dynamicItemAttributes =  Table('dynamicItemAttributes', metadata,
+            Column('typeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('attributeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('min', FLOAT(precision=53)),
+            Column('max', FLOAT(precision=53)),
+            Column('highIsGood', Boolean(name='dia_hig')),
+            schema=schema
+    )
+
+
+    dynamicItemAttributeMappings =  Table('dynamicItemAttributeMappings', metadata,
+            Column('typeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('applicableTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('resultingTypeID', INTEGER()),
+            schema=schema
     )
 
 
@@ -648,6 +668,15 @@ def metadataCreator(schema):
     )
 
 
+    invTypeRandomizedMaterials =  Table('invTypeRandomizedMaterials', metadata,
+            Column('typeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('materialTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('quantityMin', INTEGER()),
+            Column('quantityMax', INTEGER()),
+            schema=schema
+    )
+
+
     invTypeReactions =  Table('invTypeReactions', metadata,
             Column('reactionTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('input', Boolean(name='invtypereactions_input'), primary_key=True, autoincrement=False, nullable=False),
@@ -919,6 +948,15 @@ def metadataCreator(schema):
             Column('solarSystemID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('anchorType', VARCHAR(length=8), primary_key=True, autoincrement=False, nullable=False),
             Column('anchorID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            schema=schema
+    )
+
+
+    mapSecondarySuns =  Table('mapSecondarySuns', metadata,
+            Column('itemID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('solarSystemID', INTEGER(), index=True),
+            Column('typeID', INTEGER()),
+            Column('effectBeaconTypeID', INTEGER()),
             schema=schema
     )
 
@@ -1672,6 +1710,7 @@ def metadataCreator(schema):
         Column('activityName',      VARCHAR(length=50), primary_key=True, autoincrement=False, nullable=False),
         Column('modifierType',      VARCHAR(length=20), primary_key=True, autoincrement=False, nullable=False),
         Column('dogmaAttributeID',  INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('filterID',          INTEGER(), nullable=True),
         schema=schema
     )
 
@@ -1905,6 +1944,48 @@ def metadataCreator(schema):
         Column('solarSystemID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('dbuffID',       INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('value',         FLOAT(precision=53), nullable=True),
+        schema=schema
+    )
+
+    dbuffCollections = Table('dbuffCollections', metadata,
+        Column('dbuffID',              INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('displayName',          VARCHAR(length=255), nullable=True),
+        Column('developerDescription', VARCHAR(length=255), nullable=True),
+        Column('aggregateMode',        VARCHAR(length=20), nullable=True),
+        Column('operationName',        VARCHAR(length=30), nullable=True),
+        Column('showOutputValueInUI',  VARCHAR(length=20), nullable=True),
+        schema=schema
+    )
+
+    dbuffItemModifiers = Table('dbuffItemModifiers', metadata,
+        Column('dbuffID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('dogmaAttributeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    dbuffLocationModifiers = Table('dbuffLocationModifiers', metadata,
+        Column('dbuffID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('dogmaAttributeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    dbuffLocationGroupModifiers = Table('dbuffLocationGroupModifiers', metadata,
+        Column('dbuffID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('dogmaAttributeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('groupID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    dbuffLocationRequiredSkillModifiers = Table('dbuffLocationRequiredSkillModifiers', metadata,
+        Column('dbuffID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('dogmaAttributeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('skillID',          INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        schema=schema
+    )
+
+    sdeInfo = Table('sdeInfo', metadata,
+        Column('buildNumber', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+        Column('releaseDate', DateTime(), nullable=True),
         schema=schema
     )
 
