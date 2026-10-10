@@ -311,6 +311,16 @@ chmod a+r "$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}/sdeyaml_mssql_${LATEST_BUILD}_
 
 python3 export_csv.py "$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}/csv/"
 
+log "Exporting per-table MySQL dumps"
+MYSQL_TABLES_DIR="$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}/mysql_tables"
+mkdir -p "$MYSQL_TABLES_DIR"
+mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASS" -N -e "SHOW TABLES FROM \`${MYSQL_DB}\`" \
+    | while IFS= read -r table; do
+        mysqldump -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASS" \
+            --single-transaction "$MYSQL_DB" "$table" | gzip > "$MYSQL_TABLES_DIR/${table}.sql.gz"
+    done
+log "Per-table MySQL dumps -> $MYSQL_TABLES_DIR"
+
 md5sum "$WEB_ROOT/latest-mysql.sql.gz"           > "$WEB_ROOT/latest-mysql.sql.gz.md5sum"
 md5sum "$WEB_ROOT/latest-mssql.bak"              > "$WEB_ROOT/latest-mssql.bak.md5sum"
 md5sum "$WEB_ROOT/latest-sqlite.db.gz"           > "$WEB_ROOT/latest-sqlite.db.gz.md5sum"
