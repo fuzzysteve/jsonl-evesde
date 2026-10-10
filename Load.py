@@ -234,6 +234,7 @@ LOADERS = [
             'mapRegions', 'mapConstellations', 'mapSolarSystems', 'mapDenormalize',
             'mapCelestialStatistics', 'mapCelestialGraphics', 'mapJumps',
             'mapLocationWormholeClasses', 'mapLandmarks', 'staStations', 'staServices',
+            'mapSolarSystemDisallowedAnchors',
         ],
         'calls': [
             lambda: map.import_map(connection, metadata, sourcePath, language),

@@ -915,6 +915,14 @@ def metadataCreator(schema):
     )
 
 
+    mapSolarSystemDisallowedAnchors =  Table('mapSolarSystemDisallowedAnchors', metadata,
+            Column('solarSystemID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            Column('anchorType', VARCHAR(length=8), primary_key=True, autoincrement=False, nullable=False),
+            Column('anchorID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
+            schema=schema
+    )
+
+
     mapUniverse =  Table('mapUniverse', metadata,
             Column('universeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('universeName', VARCHAR(length=100)),

@@ -88,6 +88,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     mapDenormalize             = Table('mapDenormalize', metadata)
     mapJumps                   = Table('mapJumps', metadata)
     mapLocationWormholeClasses = Table('mapLocationWormholeClasses', metadata)
+    mapSolarSystemDisallowedAnchors = Table('mapSolarSystemDisallowedAnchors', metadata)
 
     stat_col_keys    = {c.key for c in mapCelestialStatistics.c}
     graphic_col_keys = {c.key for c in mapCelestialGraphics.c}
@@ -139,6 +140,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     den_rows     = []   # mapDenormalize          — all entries combined
     jump_rows    = []   # mapJumps
     wh_rows      = []   # mapLocationWormholeClasses
+    anchor_rows  = []   # mapSolarSystemDisallowedAnchors
 
     # ------------------------------------------------------------------
     # mapRegions
@@ -248,7 +250,12 @@ def import_map(connection, metadata, sourcePath, language='en'):
         ))
         if r.get('wormholeClassID') is not None:
             wh_rows.append(dict(locationID=r['_key'], wormholeClassID=r['wormholeClassID']))
+        for anchorType, field in (('category', 'disallowedAnchorCategories'),
+                                  ('group', 'disallowedAnchorGroups')):
+            for anchorID in set(r.get(field) or []):
+                anchor_rows.append(dict(solarSystemID=r['_key'], anchorType=anchorType, anchorID=anchorID))
     _log("    {} rows".format(len(sys_rows)))
+    _log("    {} disallowed anchor rows".format(len(anchor_rows)))
 
     # ------------------------------------------------------------------
     # mapStars -> mapCelestialStatistics + mapDenormalize
@@ -459,6 +466,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
     _bulk(connection, insert(mapJumps), jump_rows)
     _bulk(connection, insert(mapDenormalize), [_norm(r, den_col_keys) for r in den_rows])
     _bulk(connection, insert(mapLocationWormholeClasses), wh_rows)
+    _bulk(connection, insert(mapSolarSystemDisallowedAnchors), anchor_rows)
     trans.commit()
     _log("Map import complete")
 
