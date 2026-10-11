@@ -52,6 +52,9 @@ def import_skins(connection, metadata, sourcePath, language='en'):
             skinID         = skinID,
             internalName   = r.get('internalName'),
             skinMaterialID = r.get('skinMaterialID'),
+            visibleTranquility = r.get('visibleTranquility'),
+            visibleSerenity    = r.get('visibleSerenity'),
+            isStructureSkin    = r.get('isStructureSkin'),
         ))
         skins += 1
         for typeID in r.get('types', []):

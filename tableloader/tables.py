@@ -1150,6 +1150,9 @@ def metadataCreator(schema):
             Column('skinID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('internalName', VARCHAR(length=70)),
             Column('skinMaterialID', INTEGER()),
+            Column('visibleTranquility', Boolean(name='skin_vis_tq')),
+            Column('visibleSerenity', Boolean(name='skin_vis_sr')),
+            Column('isStructureSkin', Boolean(name='skin_struct')),
             schema=schema
 
 
