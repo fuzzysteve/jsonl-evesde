@@ -21,11 +21,18 @@ source "$CONFIG_FILE"
 # ---------------------------------------------------------------------------
 FORCE=0
 REPROCESS=0
+PREVIEW_URL=""
+PREVIEW_NOTIFY=0
 DISCORD_COMMENT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --force)      FORCE=1; shift ;;
         --reprocess)  REPROCESS=1; shift ;;
+        # --preview <zip-url>: convert a non-TQ (e.g. Singularity) SDE without
+        # touching the SDE git history, .last_build, latest-* links, the eve DB,
+        # or build retention. Output goes to $WEB_ROOT/preview/.
+        --preview)    PREVIEW_URL="$2"; shift 2 ;;
+        --notify)     PREVIEW_NOTIFY=1; shift ;;
         --comment)    DISCORD_COMMENT="$2"; shift 2 ;;
         *)            shift ;;
     esac
@@ -57,7 +64,40 @@ mkdir -p "$OUTPUT_DIR" "$SDE_DIR"
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-if [ "$REPROCESS" -eq 1 ]; then
+# Set when a preview run has loaded non-TQ data into the staging DBs; the next
+# normal run must do a full load rather than an incremental update on top of it.
+PREVIEW_DIRTY_FILE="$SCRIPT_DIR/.preview_dirty"
+PREVIEW_SDE_DIR="${PREVIEW_SDE_DIR:-${SDE_DIR%/}-preview}"
+
+if [ -n "$PREVIEW_URL" ]; then
+    # ---------------------------------------------------------------------------
+    # Preview mode: separate extract dir, no git commit, always a full load
+    # ---------------------------------------------------------------------------
+    log "Preview mode: downloading $PREVIEW_URL"
+    ZIPFILE="/tmp/evesde_preview_${TIMESTAMP}.zip"
+    curl -f -L -o "$ZIPFILE" "$PREVIEW_URL"
+    mkdir -p "$PREVIEW_SDE_DIR"
+    rm -rf "${PREVIEW_SDE_DIR:?}"/*
+    unzip -q "$ZIPFILE" -d "$PREVIEW_SDE_DIR"
+    rm -f "$ZIPFILE"
+    LATEST_BUILD=$(python3 -I -c "
+import json, sys
+with open(sys.argv[1]) as f:
+    for line in f:
+        r = json.loads(line)
+        if r.get('_key') == 'sde':
+            print(int(r['buildNumber']))
+            break
+" "$PREVIEW_SDE_DIR/_sde.jsonl")
+    if [ -z "$LATEST_BUILD" ]; then
+        log "ERROR: Could not read buildNumber from $PREVIEW_SDE_DIR/_sde.jsonl"
+        exit 1
+    fi
+    log "Preview build: $LATEST_BUILD (extracted to $PREVIEW_SDE_DIR)"
+    export SDE_SOURCE_PATH="$PREVIEW_SDE_DIR/"
+    unset SDE_CHANGED_FILES
+    touch "$PREVIEW_DIRTY_FILE"
+elif [ "$REPROCESS" -eq 1 ]; then
     # ---------------------------------------------------------------------------
     # Reprocess mode: skip download; use existing SDE files from last run
     # ---------------------------------------------------------------------------
@@ -162,6 +202,11 @@ for line in sys.stdin:
         log "Full load (no previous commit to diff against)"
     fi
     cd "$SCRIPT_DIR"
+fi
+
+if [ -z "$PREVIEW_URL" ] && [ -f "$PREVIEW_DIRTY_FILE" ]; then
+    log "Staging DBs hold preview data — forcing full load"
+    unset SDE_CHANGED_FILES
 fi
 
 # ---------------------------------------------------------------------------
@@ -285,6 +330,52 @@ log "Stopping MSSQL container"
 docker stop "$MSSQL_CONTAINER"
 
 # ---------------------------------------------------------------------------
+# Preview publish: own directory tree, no latest-* links, no eve DB sync,
+# no .last_build, no retention cleanup. Exits here.
+# ---------------------------------------------------------------------------
+if [ -n "$PREVIEW_URL" ]; then
+    PREVIEW_ROOT="$WEB_ROOT/preview"
+    PREVIEW_OUT="$PREVIEW_ROOT/${LATEST_BUILD}_${TIMESTAMP}"
+    log "=== Publishing preview (build $LATEST_BUILD) -> $PREVIEW_OUT ==="
+    mkdir -p "$PREVIEW_OUT"
+    mv "$OUTPUT_DIR"/*_${LATEST_BUILD}_${TIMESTAMP}* "$PREVIEW_OUT/"
+    chmod a+r "$PREVIEW_OUT"/*
+
+    python3 export_csv.py "$PREVIEW_OUT/csv/"
+
+    log "Exporting per-table MySQL dumps"
+    mkdir -p "$PREVIEW_OUT/mysql_tables"
+    mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASS" -N -e "SHOW TABLES FROM \`${MYSQL_DB}\`" \
+        | while IFS= read -r table; do
+            mysqldump -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASS" \
+                --single-transaction "$MYSQL_DB" "$table" | gzip > "$PREVIEW_OUT/mysql_tables/${table}.sql.gz"
+        done
+
+    (cd "$PREVIEW_OUT" && md5sum -- *.gz *.pgdump *.bak > md5sums.txt)
+    rm -f "$PREVIEW_ROOT/latest"
+    ln -s "$PREVIEW_OUT" "$PREVIEW_ROOT/latest"
+    log "=== Preview done (build $LATEST_BUILD) ==="
+
+    if [ "$PREVIEW_NOTIFY" -eq 1 ] && [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
+        PAYLOAD=$(python3 -I -c "
+import json, sys
+build, url, comment = sys.argv[1:4]
+p = {'embeds': [{'title': f'Preview SDE build {build} published',
+                 'color': 15105570,
+                 'description': f'Non-Tranquility preview conversion. [Download directory]({url})',
+                 'fields': []}]}
+if comment:
+    p['embeds'][0]['fields'].append({'name': 'Note', 'value': comment})
+print(json.dumps(p))
+" "$LATEST_BUILD" "$WEB_ROOT_URL/preview/${LATEST_BUILD}_${TIMESTAMP}/" "$DISCORD_COMMENT")
+        _DISCORD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" -d "$PAYLOAD")
+        [ "$_DISCORD_STATUS" = "204" ] || log "Discord webhook failed: HTTP $_DISCORD_STATUS"
+    fi
+    exit 0
+fi
+
+# ---------------------------------------------------------------------------
 # Publish: move files, create symlinks, generate checksums, sync MySQL
 # ---------------------------------------------------------------------------
 log "=== Publishing (build $LATEST_BUILD) ==="
@@ -331,6 +422,7 @@ mysqldump sdeyaml|mysql eve
 # Record success only after all work completes; any earlier failure under
 # set -e aborts here, leaving BUILD_FILE unchanged so the next run retries.
 echo "$LATEST_BUILD" > "$BUILD_FILE"
+rm -f "$PREVIEW_DIRTY_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
 
 log "=== Cleaning up old builds ==="

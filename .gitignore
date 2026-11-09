@@ -210,3 +210,4 @@ run-conversion.cfg
 eve.db
 .last_build
 .run-conversion.lock
+.preview_dirty

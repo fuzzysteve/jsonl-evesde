@@ -21,6 +21,8 @@ config = configparser.ConfigParser()
 config.read(inifile)
 destination = config.get('Database', database)
 sourcePath = config.get('Files', 'sourcePath')
+# run-conversion.sh --preview points this at a separate extract dir
+sourcePath = os.environ.get('SDE_SOURCE_PATH') or sourcePath
 
 
 from tableloader.tableFunctions import *
