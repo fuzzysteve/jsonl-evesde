@@ -1,0 +1,20 @@
+[project]
+name = "jsonl-evesde"
+version = "0.1.0"
+description = "Convert the EVE Online JSONL Static Data Export into SQL databases"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "configparser>=7.2.0",
+    "openpyxl>=3.1.5",
+    "psycopg>=3.3.8",
+    "psycopg2>=2.9.13",
+    "pymssql>=2.4.6",
+    "pymysql>=1.2.4",
+    "pyyaml>=6.0.3",
+    "sqlalchemy>=2.0.57,<2.1",  # codebase targets the 2.0 API
+]
+
+[tool.uv]
+# Scripts, not an installable package: don't build/install the project itself.
+package = false

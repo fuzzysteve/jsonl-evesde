@@ -4,17 +4,19 @@ Loads the EVE Online Static Data Export (SDE) from CCP's JSONL format into relat
 
 ## Prerequisites
 
-- Python 3.10+ with a virtualenv at `.venv/`
+- Python 3.10+ and [uv](https://docs.astral.sh/uv/)
 - The SDE JSONL files extracted to a local directory (default `/opt/sde/files/`)
 - Database servers as needed (MySQL, PostgreSQL, MSSQL)
 - `flock`, `unzip`, `curl`, `git` for the automated pipeline script
+- `pg_config` (e.g. `libpq-dev`) if `psycopg2` has to build from source
 
-Install Python dependencies:
+Install Python dependencies into `.venv/` (versions pinned in `uv.lock`):
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
+uv sync --frozen
 ```
+
+To change dependencies, use `uv add <pkg>` / `uv remove <pkg>`, or bump pins with `uv lock --upgrade` then `uv sync`. Commit `pyproject.toml` and `uv.lock` together.
 
 ## Configuration
 

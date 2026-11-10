@@ -4,6 +4,8 @@
 
 Always use `.venv/bin/python`, never system `python3`. SQLAlchemy and all DB drivers are installed only in the virtualenv.
 
+Dependencies are managed by uv: `pyproject.toml` declares them, `uv.lock` pins them, and `uv sync --frozen` builds `.venv`. There is no pip in the venv — add/remove packages with `uv add` / `uv remove`, never by hand-editing the venv. SQLAlchemy is capped `<2.1` because the code targets the 2.0 API.
+
 ## Architecture
 
 `Load.py` is the entry point. It reads `sdeloader.cfg` for DB URLs and the SDE source path, then dispatches to loader modules in `tableloader/tableFunctions/`. All table schemas live in `tableloader/tables.py`.
