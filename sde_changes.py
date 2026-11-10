@@ -15,6 +15,7 @@ import urllib.request
 
 CHANGES_URL = "https://developers.eveonline.com/static-data/tranquility/changes/{}.jsonl"
 MAX_CHAIN = 20  # safety cap on how far back we walk
+FIELD_LIMIT = 1024  # Discord embed field value max length; longer -> HTTP 400 for the whole embed
 
 
 def fetch(build):
@@ -113,6 +114,21 @@ def summarise(builds, agg, last_build):
     return lines
 
 
+def fit(lines, limit=FIELD_LIMIT):
+    """Drop trailing lines until the joined text fits in a Discord field, noting how many were cut."""
+    if len("\n".join(lines)) <= limit:
+        return lines
+    keep = list(lines)
+    dropped = 0
+    while keep:
+        keep.pop()
+        dropped += 1
+        candidate = keep + [f"  ...and {dropped} more"]
+        if len("\n".join(candidate)) <= limit:
+            return candidate
+    return [f"{dropped} tables changed"]
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: sde_changes.py <currentBuild> [<lastBuild>]", file=sys.stderr)
@@ -125,4 +141,4 @@ if __name__ == "__main__":
     if not builds:
         sys.exit(1)
 
-    print("\\n".join(summarise(builds, agg, last)))
+    print("\\n".join(fit(summarise(builds, agg, last))))
