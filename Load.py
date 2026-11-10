@@ -480,7 +480,9 @@ LOADERS = [
     {
         'module_name': 'military',
         'files': ['militarycampaigns.jsonl', 'militarycampaignobjectives.jsonl'],
-        'tables': ['milCampaigns', 'milCampaignObjectives', 'milCampaignObjContentTags'],
+        'tables': ['milCampaigns', 'milCampaignObjectives', 'milCampaignObjContentTags',
+                   'milCampaignAnnotations', 'milCampaignObjAnnotations'],
+        'trnTranslations_tcIDs': [51, 52],
         'calls': [
             lambda: military.import_military_campaigns(connection, metadata, sourcePath, language),
             lambda: military.import_military_campaign_objectives(connection, metadata, sourcePath, language),

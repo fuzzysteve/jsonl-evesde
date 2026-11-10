@@ -1717,6 +1717,26 @@ def metadataCreator(schema):
         schema=schema
     )
 
+    # Key/value store for every entry in a campaign's / objective's `annotations` dict (UI text,
+    # art and video paths, ...). Localised values hold the load-language text in `value`, with all
+    # languages in trnTranslations (tcID 51 / 52, keyID = annotationID). annotationID is assigned
+    # in (campaign/objective ID, annotationKey) order, so it is stable within a build only.
+    milCampaignAnnotations = Table('milCampaignAnnotations', metadata,
+        Column('annotationID',  INTEGER(),           primary_key=True, autoincrement=False, nullable=False),
+        Column('campaignID',    _uuid(),             nullable=False, index=True),
+        Column('annotationKey', VARCHAR(length=100), nullable=False),
+        Column('value',         UnicodeText(),       nullable=True),
+        schema=schema
+    )
+
+    milCampaignObjAnnotations = Table('milCampaignObjAnnotations', metadata,
+        Column('annotationID',  INTEGER(),           primary_key=True, autoincrement=False, nullable=False),
+        Column('objectiveID',   _uuid(),             nullable=False, index=True),
+        Column('annotationKey', VARCHAR(length=100), nullable=False),
+        Column('value',         UnicodeText(),       nullable=True),
+        schema=schema
+    )
+
     mercenaryTacticalOperations = Table('mercenaryTacticalOperations', metadata,
         Column('operationID',      INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
         Column('name',             VARCHAR(length=255), nullable=True),

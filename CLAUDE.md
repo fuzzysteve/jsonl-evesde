@@ -89,6 +89,7 @@ Multiple modules write to `trnTranslations` using different `tcID` values. In up
 | 42, 43, 44, 45, 46, 47 | schools |
 | 48 | notifications |
 | 49, 50 | industry |
+| 51, 52 | military (campaign / objective annotations, keyed by `annotationID`) |
 
 When adding a loader that writes to `trnTranslations`, confirm the tcID isn't already used by another module and add it to `trnTranslations_tcIDs` in the LOADERS entry.
 

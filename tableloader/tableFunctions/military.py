@@ -24,14 +24,67 @@ def _log(msg):
     from datetime import datetime
     print(f"[{datetime.now():%H:%M:%S}] {msg}")
 
+
+# Language codes used by the SDE's localised-string dicts (matches trnTranslationLanguages).
+_LANGS = {'de', 'en', 'es', 'fr', 'ja', 'ko', 'ru', 'zh'}
+
+# trnTranslations tcIDs owned by this module (see CLAUDE.md tcID table).
+TCID_CAMPAIGN_ANNOTATIONS = 51
+TCID_OBJECTIVE_ANNOTATIONS = 52
+
+
+def _is_localised(v):
+    return isinstance(v, dict) and bool(v) and set(v) <= _LANGS
+
+
+def _insert_annotations(connection, tbl, trn, owner_col, records, tcID, language):
+    """Write every annotations entry of `records` to the key/value table `tbl`.
+
+    Localised values store the load-language text in `value` and every language in
+    trnTranslations under `tcID` (keyID = annotationID). Other scalars are stored as text;
+    anything structured is stored as JSON. Returns (annotation rows, translation rows)."""
+    annotation_id = 0
+    translations = 0
+    for r in sorted(records, key=lambda r: r['_key']):
+        ann = r.get('annotations') or {}
+        for key in sorted(ann):
+            v = ann[key]
+            annotation_id += 1
+            if _is_localised(v):
+                value = _en(v, language)
+                for lang, text in v.items():
+                    connection.execute(insert(trn).values(
+                        tcID=tcID, keyID=annotation_id, languageID=lang, text=text))
+                    translations += 1
+            elif v is None or isinstance(v, str):
+                value = v
+            elif isinstance(v, (dict, list)):
+                value = json.dumps(v, ensure_ascii=False)
+            else:
+                value = str(v)
+            connection.execute(insert(tbl).values(**{
+                'annotationID':  annotation_id,
+                owner_col:       r['_key'],
+                'annotationKey': key,
+                'value':         value,
+            }))
+    return annotation_id, translations
+
 def import_military_campaigns(connection, metadata, sourcePath, language='en'):
-    """militaryCampaigns.jsonl -> milCampaigns"""
+    """militaryCampaigns.jsonl -> milCampaigns + milCampaignAnnotations (+ trnTranslations tcID 51)"""
     _log("Importing militaryCampaigns")
-    tbl = Table('milCampaigns', metadata)
+    tbl      = Table('milCampaigns', metadata)
+    tblAnn   = Table('milCampaignAnnotations', metadata)
+    trn      = Table('trnTranslations', metadata)
+    trn_cols = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=TCID_CAMPAIGN_ANNOTATIONS,
+                                               tableName='milCampaignAnnotations', columnName='value',
+                                               masterID='annotationID'))
     count = 0
-    for r in _jsonl(sourcePath, 'militaryCampaigns.jsonl'):
-        ann = r.get('annotations', {})
+    records = list(_jsonl(sourcePath, 'militaryCampaigns.jsonl'))
+    for r in records:
+        ann = r.get('annotations') or {}
         connection.execute(insert(tbl).values(
             campaignID       = r['_key'],
             title            = _en(r.get('title', {}), language),
@@ -44,19 +97,29 @@ def import_military_campaigns(connection, metadata, sourcePath, language='en'):
             mapFocusEntityID = ann.get('mapFocusEntityID'),
         ))
         count += 1
+    annotations, translations = _insert_annotations(
+        connection, tblAnn, trn, 'campaignID', records, TCID_CAMPAIGN_ANNOTATIONS, language)
     trans.commit()
-    _log("    {} rows".format(count))
+    _log("    {} rows, {} annotations, {} annotation translations".format(count, annotations, translations))
 
 
 def import_military_campaign_objectives(connection, metadata, sourcePath, language='en'):
-    """militaryCampaignObjectives.jsonl -> milCampaignObjectives + milCampaignObjContentTags"""
+    """militaryCampaignObjectives.jsonl -> milCampaignObjectives + milCampaignObjContentTags
+    + milCampaignObjAnnotations (+ trnTranslations tcID 52)"""
     _log("Importing militaryCampaignObjectives")
-    tblObj  = Table('milCampaignObjectives', metadata)
-    tblTags = Table('milCampaignObjContentTags', metadata)
+    tblObj   = Table('milCampaignObjectives', metadata)
+    tblTags  = Table('milCampaignObjContentTags', metadata)
+    tblAnn   = Table('milCampaignObjAnnotations', metadata)
+    trn      = Table('trnTranslations', metadata)
+    trn_cols = Table('trnTranslationColumns', metadata)
     trans = connection.begin()
+    connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=TCID_OBJECTIVE_ANNOTATIONS,
+                                               tableName='milCampaignObjAnnotations', columnName='value',
+                                               masterID='annotationID'))
     objectives = tags = 0
 
-    for r in _jsonl(sourcePath, 'militaryCampaignObjectives.jsonl'):
+    records = list(_jsonl(sourcePath, 'militaryCampaignObjectives.jsonl'))
+    for r in records:
         obj_id = r['_key']
         isk     = (r.get('rewards') or {}).get('isk') or {}
         lp      = (r.get('rewards') or {}).get('lp') or {}
@@ -96,8 +159,11 @@ def import_military_campaign_objectives(connection, metadata, sourcePath, langua
             ))
             tags += 1
 
+    annotations, translations = _insert_annotations(
+        connection, tblAnn, trn, 'objectiveID', records, TCID_OBJECTIVE_ANNOTATIONS, language)
     trans.commit()
-    _log("    {} objectives, {} content-tag rows".format(objectives, tags))
+    _log("    {} objectives, {} content-tag rows, {} annotations, {} annotation translations".format(
+        objectives, tags, annotations, translations))
 
 
 def import_mercenary_tactical_operations(connection, metadata, sourcePath, language='en'):
