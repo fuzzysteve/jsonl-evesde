@@ -4,7 +4,7 @@ Loads the EVE Online Static Data Export (SDE) from CCP's JSONL format into relat
 
 ## Prerequisites
 
-- Python 3.10+ and [uv](https://docs.astral.sh/uv/)
+- [uv](https://docs.astral.sh/uv/) — it installs the pinned Python (3.14, see `.python-version`) if it isn't already present
 - The SDE JSONL files extracted to a local directory (default `/opt/sde/files/`)
 - Database servers as needed (MySQL, PostgreSQL, MSSQL)
 - `flock`, `unzip`, `curl`, `git` for the automated pipeline script
