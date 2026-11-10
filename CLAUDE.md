@@ -4,7 +4,7 @@
 
 Always use `.venv/bin/python`, never system `python3`. SQLAlchemy and all DB drivers are installed only in the virtualenv.
 
-Dependencies are managed by uv: `pyproject.toml` declares them, `uv.lock` pins them, and `uv sync --frozen` builds `.venv`. There is no pip in the venv — add/remove packages with `uv add` / `uv remove`, never by hand-editing the venv. SQLAlchemy is capped `<2.1` because the code targets the 2.0 API.
+Dependencies are managed by uv: `pyproject.toml` declares them, `uv.lock` pins them, and `uv sync --frozen` builds `.venv`. There is no pip in the venv — add/remove packages with `uv add` / `uv remove`, never by hand-editing the venv. SQLAlchemy is on 2.1. UUID columns use `_uuid()` in `tables.py`, which forces CHAR(32) on MySQL/MariaDB — 2.1 would otherwise emit MariaDB's native UUID type, which breaks importing the published dump into plain MySQL.
 
 ## Architecture
 

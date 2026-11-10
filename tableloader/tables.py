@@ -7,6 +7,13 @@ from sqlalchemy import JSON
 from sqlalchemy.dialects.postgresql import JSONB
 
 
+def _uuid():
+    """UUID column: native uuid on PostgreSQL / UNIQUEIDENTIFIER on MSSQL, but CHAR(32) hex on
+    MySQL/MariaDB. SQLAlchemy 2.1 would otherwise emit MariaDB's native UUID type, which plain
+    MySQL can't import from the published dump and which changes the stored value format."""
+    return Uuid(as_uuid=False).with_variant(Uuid(as_uuid=False, native_uuid=False), "mysql", "mariadb")
+
+
 def metadataCreator(schema):
 
 
@@ -1667,7 +1674,7 @@ def metadataCreator(schema):
     )
 
     milCampaigns = Table('milCampaigns', metadata,
-        Column('campaignID',       Uuid(as_uuid=False), primary_key=True, nullable=False),
+        Column('campaignID',       _uuid(),             primary_key=True, nullable=False),
         Column('title',            VARCHAR(length=255), nullable=True),
         Column('subtitle',         UnicodeText(),       nullable=True),
         Column('factionID',        INTEGER(),           nullable=True),
@@ -1680,8 +1687,8 @@ def metadataCreator(schema):
     )
 
     milCampaignObjectives = Table('milCampaignObjectives', metadata,
-        Column('objectiveID',                  Uuid(as_uuid=False), primary_key=True, nullable=False),
-        Column('campaignID',                   Uuid(as_uuid=False), nullable=True, index=True),
+        Column('objectiveID',                  _uuid(),             primary_key=True, nullable=False),
+        Column('campaignID',                   _uuid(),             nullable=True, index=True),
         Column('title',                        VARCHAR(length=255), nullable=True),
         Column('subtitle',                     UnicodeText(),       nullable=True),
         Column('careerPath',                   VARCHAR(length=100), nullable=True),
@@ -1705,7 +1712,7 @@ def metadataCreator(schema):
     )
 
     milCampaignObjContentTags = Table('milCampaignObjContentTags', metadata,
-        Column('objectiveID', Uuid(as_uuid=False), primary_key=True, nullable=False),
+        Column('objectiveID', _uuid(),             primary_key=True, nullable=False),
         Column('tag',         VARCHAR(length=100), primary_key=True, nullable=False),
         schema=schema
     )

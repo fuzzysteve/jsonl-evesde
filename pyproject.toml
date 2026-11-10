@@ -3,7 +3,7 @@ name = "jsonl-evesde"
 version = "0.1.0"
 description = "Convert the EVE Online JSONL Static Data Export into SQL databases"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "configparser>=7.2.0",
     "openpyxl>=3.1.5",
@@ -12,7 +12,7 @@ dependencies = [
     "pymssql>=2.4.6",
     "pymysql>=1.2.4",
     "pyyaml>=6.0.3",
-    "sqlalchemy>=2.0.57,<2.1",  # codebase targets the 2.0 API
+    "sqlalchemy>=2.1.8,<2.2",
 ]
 
 [tool.uv]
