@@ -28,7 +28,8 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --force)      FORCE=1; shift ;;
         --reprocess)  REPROCESS=1; shift ;;
-        # --preview <zip-url>: convert a non-TQ (e.g. Singularity) SDE without
+        # --preview <release-url>: convert a non-TQ SDE API release (e.g.
+        # https://sde.evetech.net/<tenant>/latest/) without
         # touching the SDE git history, .last_build, latest-* links, the eve DB,
         # or build retention. Output goes to $WEB_ROOT/preview/.
         --preview)    PREVIEW_URL="$2"; shift 2 ;;
@@ -62,6 +63,8 @@ source "$VENV_DIR/bin/activate"
 
 mkdir -p "$OUTPUT_DIR" "$SDE_DIR"
 
+SDE_API_URL="${SDE_API_URL:-https://sde.evetech.net/tranquility/latest/}"
+
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Set when a preview run has loaded non-TQ data into the staging DBs; the next
@@ -73,24 +76,9 @@ if [ -n "$PREVIEW_URL" ]; then
     # ---------------------------------------------------------------------------
     # Preview mode: separate extract dir, no git commit, always a full load
     # ---------------------------------------------------------------------------
-    log "Preview mode: downloading $PREVIEW_URL"
-    ZIPFILE="/tmp/evesde_preview_${TIMESTAMP}.zip"
-    curl -f -L -o "$ZIPFILE" "$PREVIEW_URL"
-    mkdir -p "$PREVIEW_SDE_DIR"
-    rm -rf "${PREVIEW_SDE_DIR:?}"/*
-    unzip -q "$ZIPFILE" -d "$PREVIEW_SDE_DIR"
-    rm -f "$ZIPFILE"
-    LATEST_BUILD=$(python3 -I -c "
-import json, sys
-with open(sys.argv[1]) as f:
-    for line in f:
-        r = json.loads(line)
-        if r.get('_key') == 'sde':
-            print(int(r['buildNumber']))
-            break
-" "$PREVIEW_SDE_DIR/_sde.jsonl")
-    if [ -z "$LATEST_BUILD" ]; then
-        log "ERROR: Could not read buildNumber from $PREVIEW_SDE_DIR/_sde.jsonl"
+    log "Preview mode: fetching $PREVIEW_URL"
+    if ! LATEST_BUILD=$(SDE_API_URL="$PREVIEW_URL" python3 "$SCRIPT_DIR/fetch_sde.py" fetch "$PREVIEW_SDE_DIR"); then
+        log "ERROR: Preview fetch from $PREVIEW_URL failed"
         exit 1
     fi
     log "Preview build: $LATEST_BUILD (extracted to $PREVIEW_SDE_DIR)"
@@ -129,15 +117,7 @@ else
     # Check for new SDE version
     # ---------------------------------------------------------------------------
     log "Checking latest SDE build number..."
-    LATEST_JSON=$(curl -sf "$LATEST_URL")
-    LATEST_BUILD=$(echo "$LATEST_JSON" | python3 -c "
-import json, sys
-for line in sys.stdin:
-    r = json.loads(line)
-    if r.get('_key') == 'sde':
-        print(r['buildNumber'])
-        break
-")
+    LATEST_BUILD=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" build || true)
 
     if [ -z "$LATEST_BUILD" ]; then
         log "ERROR: Could not determine latest build number"
@@ -165,14 +145,15 @@ for line in sys.stdin:
     # ---------------------------------------------------------------------------
     # Download and extract new SDE
     # ---------------------------------------------------------------------------
-    log "Downloading SDE build $LATEST_BUILD..."
-    ZIPFILE="/tmp/evesde_${LATEST_BUILD}.zip"
-    curl -f -L -o "$ZIPFILE" "$DOWNLOAD_URL"
-    log "Extracting to $SDE_DIR..."
-    rm -rf "${SDE_DIR:?}"/*
-    unzip -q "$ZIPFILE" -d "$SDE_DIR"
-    rm -f "$ZIPFILE"
-    log "SDE extracted"
+    log "Downloading SDE build $LATEST_BUILD from $SDE_API_URL..."
+    # fetch_sde.py downloads every table from one pinned release and prints its
+    # build number; a release published since the check above wins.
+    FETCHED_BUILD=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" fetch "$SDE_DIR")
+    if [ "$FETCHED_BUILD" != "$LATEST_BUILD" ]; then
+        log "Build changed during check: fetched $FETCHED_BUILD (checked $LATEST_BUILD)"
+        LATEST_BUILD="$FETCHED_BUILD"
+    fi
+    log "SDE downloaded to $SDE_DIR"
 
     # ---------------------------------------------------------------------------
     # Commit new SDE files to local git repo; detect what changed

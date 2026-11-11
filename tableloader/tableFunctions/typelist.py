@@ -38,7 +38,7 @@ def import_type_lists(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'typeLists.jsonl'):
-        lid = r['_key']
+        lid = r['typeListID']
         connection.execute(insert(header).values(
             typeListID         = lid,
             name               = r.get('name'),

@@ -35,7 +35,7 @@ def import_ancestries(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'ancestries.jsonl'):
         connection.execute(insert(tbl).values(
-            ancestryID       = r['_key'],
+            ancestryID       = r['ancestryID'],
             ancestryName     = _en(r.get('name', {}), language),
             bloodlineID      = r.get('bloodlineID'),
             description      = _en(r.get('description', {}), language),
@@ -49,7 +49,7 @@ def import_ancestries(connection, metadata, sourcePath, language='en'):
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(
-                tcID=12, keyID=r['_key'], languageID=lang, text=text))
+                tcID=12, keyID=r['ancestryID'], languageID=lang, text=text))
         count += 1
     trans.commit()
     _log("    {} rows".format(count))
@@ -66,7 +66,7 @@ def import_bloodlines(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'bloodlines.jsonl'):
         connection.execute(insert(tbl).values(
-            bloodlineID            = r['_key'],
+            bloodlineID            = r['bloodlineID'],
             bloodlineName          = _en(r.get('name', {}), language),
             raceID                 = r.get('raceID'),
             description            = _en(r.get('description', {}), language),
@@ -86,7 +86,7 @@ def import_bloodlines(connection, metadata, sourcePath, language='en'):
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(
-                tcID=11, keyID=r['_key'], languageID=lang, text=text))
+                tcID=11, keyID=r['bloodlineID'], languageID=lang, text=text))
         count += 1
     trans.commit()
     _log("    {} rows".format(count))
@@ -100,7 +100,7 @@ def import_character_attributes(connection, metadata, sourcePath, language='en')
     count = 0
     for r in _jsonl(sourcePath, 'characterAttributes.jsonl'):
         connection.execute(insert(tbl).values(
-            attributeID      = r['_key'],
+            attributeID      = r['attributeID'],
             attributeName    = _en(r.get('name', {}), language),
             description      = r.get('description'),
             iconID           = r.get('iconID'),
@@ -125,7 +125,7 @@ def import_factions(connection, metadata, sourcePath, language='en'):
         # raceIDs is a bitmask sum of memberRaces list, matching classic SDE
         raceIDs = sum(r.get('memberRaces', []))
         connection.execute(insert(tbl).values(
-            factionID            = r['_key'],
+            factionID            = r['factionID'],
             factionName          = _en(r.get('name', {}), language),
             description          = _en(r.get('description', {}), language),
             raceIDs              = raceIDs,
@@ -139,7 +139,7 @@ def import_factions(connection, metadata, sourcePath, language='en'):
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(
-                tcID=19, keyID=r['_key'], languageID=lang, text=text))
+                tcID=19, keyID=r['factionID'], languageID=lang, text=text))
         count += 1
     trans.commit()
     _log("    {} rows".format(count))
@@ -156,7 +156,7 @@ def import_races(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'races.jsonl'):
         connection.execute(insert(tbl).values(
-            raceID           = r['_key'],
+            raceID           = r['raceID'],
             raceName         = _en(r.get('name', {}), language),
             description      = _en(r.get('description', {}), language),
             iconID           = r.get('iconID'),
@@ -164,7 +164,7 @@ def import_races(connection, metadata, sourcePath, language='en'):
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(
-                tcID=16, keyID=r['_key'], languageID=lang, text=text))
+                tcID=16, keyID=r['raceID'], languageID=lang, text=text))
         count += 1
     trans.commit()
     _log("    {} rows".format(count))

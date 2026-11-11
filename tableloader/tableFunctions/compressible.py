@@ -26,7 +26,7 @@ def import_compressible_types(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'compressibleTypes.jsonl'):
         connection.execute(insert(tbl).values(
-            typeID           = r['_key'],
+            typeID           = r['typeID'],
             compressedTypeID = r['compressedTypeID'],
         ))
         count += 1

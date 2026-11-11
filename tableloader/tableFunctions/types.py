@@ -59,7 +59,7 @@ def import_types(connection, metadata, sourcePath, language='en'):
 
     for typedata in _jsonl(sourcePath, 'types.jsonl'):
         type_rows.append(dict(
-            typeID          = typedata['_key'],
+            typeID          = typedata['typeID'],
             groupID         = typedata.get('groupID', 0),
             typeName        = _trunc((typedata.get('name') or {}).get(language, '')),
             description     = (typedata.get('description') or {}).get(language, ''),
@@ -84,16 +84,16 @@ def import_types(connection, metadata, sourcePath, language='en'):
         ))
         if 'metaGroupID' in typedata or 'variationParentTypeID' in typedata:
             meta_rows.append(dict(
-                typeID       = typedata['_key'],
+                typeID       = typedata['typeID'],
                 metaGroupID  = typedata.get('metaGroupID'),
                 parentTypeID = typedata.get('variationParentTypeID'),
             ))
         if isinstance(typedata.get('name'), dict):
             for lang, text in typedata['name'].items():
-                trn_rows.append(dict(tcID=8, keyID=typedata['_key'], languageID=lang, text=text))
+                trn_rows.append(dict(tcID=8, keyID=typedata['typeID'], languageID=lang, text=text))
         if isinstance(typedata.get('description'), dict):
             for lang, text in typedata['description'].items():
-                trn_rows.append(dict(tcID=33, keyID=typedata['_key'], languageID=lang, text=text))
+                trn_rows.append(dict(tcID=33, keyID=typedata['typeID'], languageID=lang, text=text))
 
     _bulk(connection, insert(invTypes), type_rows)
     _bulk(connection, insert(invMetaTypes), meta_rows)
@@ -107,7 +107,7 @@ def import_bonus(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     rows = []
     for typedata in _jsonl(sourcePath, 'typeBonus.jsonl'):
-        key = typedata['_key']
+        key = typedata['typeID']
         for rolebonus in typedata.get('roleBonuses', []):
             rows.append(dict(
                 typeID    = key,
@@ -119,10 +119,10 @@ def import_bonus(connection, metadata, sourcePath, language='en'):
                 isPositive = rolebonus.get('isPositive'),
             ))
         for skillbonus in typedata.get('types', []):
-            for skill in skillbonus['_value']:
+            for skill in skillbonus['bonuses']:
                 rows.append(dict(
                     typeID    = key,
-                    skillID   = skillbonus.get('_key'),
+                    skillID   = skillbonus.get('typeID'),
                     bonus     = skill.get('bonus'),
                     bonusText = (skill.get('bonusText') or {}).get(language, ''),
                     unitID    = skill.get('unitID'),
@@ -152,7 +152,7 @@ def import_materials(connection, metadata, sourcePath, language='en'):
     rows = []
     random_rows = []
     for typedata in _jsonl(sourcePath, 'typeMaterials.jsonl'):
-        key = typedata['_key']
+        key = typedata['typeID']
         for material in typedata.get('materials', []):
             rows.append(dict(
                 typeID         = key,
@@ -179,7 +179,7 @@ def import_dogma(connection, metadata, sourcePath, language='en'):
     attr_rows   = []
     effect_rows = []
     for typedata in _jsonl(sourcePath, 'typeDogma.jsonl'):
-        key = typedata['_key']
+        key = typedata['typeID']
         for attribute in typedata.get('dogmaAttributes', []):
             attr_rows.append(dict(
                 typeID      = key,
@@ -209,18 +209,18 @@ def import_groups(connection, metadata, sourcePath, language='en'):
     trn_rows   = []
     for groupdata in _jsonl(sourcePath, 'groups.jsonl'):
         group_rows.append(dict(
-            groupID              = groupdata['_key'],
-            anchorable           = groupdata['anchorable'],
-            anchored             = groupdata['anchored'],
+            groupID              = groupdata['groupID'],
+            anchorable           = groupdata.get('anchorable'),
+            anchored             = groupdata.get('anchored'),
             categoryID           = groupdata['categoryID'],
-            fittableNonSingleton = groupdata['fittableNonSingleton'],
+            fittableNonSingleton = groupdata.get('fittableNonSingleton'),
             groupName            = groupdata['name'].get(language, ''),
-            published            = groupdata['published'],
-            useBasePrice         = groupdata['useBasePrice'],
+            published            = groupdata.get('published'),
+            useBasePrice         = groupdata.get('useBasePrice'),
             iconID               = groupdata.get('iconID'),
         ))
         for lang, text in groupdata.get('name', {}).items():
-            trn_rows.append(dict(tcID=7, keyID=groupdata['_key'], languageID=lang, text=text))
+            trn_rows.append(dict(tcID=7, keyID=groupdata['groupID'], languageID=lang, text=text))
     _bulk(connection, insert(invGroups), group_rows)
     _bulk(connection, insert(trnTranslations), trn_rows)
     trans.commit()
@@ -238,13 +238,13 @@ def import_categories(connection, metadata, sourcePath, language='en'):
     trn_rows = []
     for categorydata in _jsonl(sourcePath, 'categories.jsonl'):
         cat_rows.append(dict(
-            categoryID   = categorydata['_key'],
+            categoryID   = categorydata['categoryID'],
             categoryName = categorydata['name'].get(language, ''),
             published    = categorydata['published'],
             iconID       = categorydata.get('iconID'),
         ))
         for lang, text in categorydata.get('name', {}).items():
-            trn_rows.append(dict(tcID=6, keyID=categorydata['_key'], languageID=lang, text=text))
+            trn_rows.append(dict(tcID=6, keyID=categorydata['categoryID'], languageID=lang, text=text))
     _bulk(connection, insert(invCategories), cat_rows)
     _bulk(connection, insert(trnTranslations), trn_rows)
     trans.commit()
@@ -263,13 +263,13 @@ def import_meta_groups(connection, metadata, sourcePath, language='en'):
     trn_rows  = []
     for r in _jsonl(sourcePath, 'metaGroups.jsonl'):
         meta_rows.append(dict(
-            metaGroupID   = r['_key'],
+            metaGroupID   = r['metaGroupID'],
             metaGroupName = _en(r.get('name', {}), language),
             description   = _en(r.get('description', {}), language),
             iconID        = r.get('iconID'),
         ))
         for lang, text in r.get('name', {}).items():
-            trn_rows.append(dict(tcID=15, keyID=r['_key'], languageID=lang, text=text))
+            trn_rows.append(dict(tcID=15, keyID=r['metaGroupID'], languageID=lang, text=text))
     _bulk(connection, insert(tbl), meta_rows)
     _bulk(connection, insert(trnTranslations), trn_rows)
     trans.commit()
@@ -288,7 +288,7 @@ def import_market_groups(connection, metadata, sourcePath, language='en'):
     trn_rows = []
     for r in _jsonl(sourcePath, 'marketGroups.jsonl'):
         mkt_rows.append(dict(
-            marketGroupID   = r['_key'],
+            marketGroupID   = r['marketGroupID'],
             parentGroupID   = r.get('parentGroupID'),
             marketGroupName = _en(r.get('name', {}), language),
             description     = _en(r.get('description', {}), language),
@@ -296,7 +296,7 @@ def import_market_groups(connection, metadata, sourcePath, language='en'):
             hasTypes        = r.get('hasTypes'),
         ))
         for lang, text in r.get('name', {}).items():
-            trn_rows.append(dict(tcID=14, keyID=r['_key'], languageID=lang, text=text))
+            trn_rows.append(dict(tcID=14, keyID=r['marketGroupID'], languageID=lang, text=text))
     _bulk(connection, insert(tbl), mkt_rows)
     _bulk(connection, insert(trnTranslations), trn_rows)
     trans.commit()

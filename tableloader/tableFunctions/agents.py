@@ -26,7 +26,7 @@ def import_agent_types(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'agentTypes.jsonl'):
         connection.execute(insert(tbl).values(
-            agentTypeID = r['_key'],
+            agentTypeID = r['agentTypeID'],
             agentType   = r.get('name'),
         ))
         count += 1
@@ -42,7 +42,7 @@ def import_agents_in_space(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'agentsInSpace.jsonl'):
         connection.execute(insert(tbl).values(
-            agentID      = r['_key'],
+            agentID      = r['agentID'],
             dungeonID    = r.get('dungeonID'),
             solarSystemID= r.get('solarSystemID'),
             spawnPointID = r.get('spawnPointID'),

@@ -26,7 +26,7 @@ def import_industry_activities(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'industryActivities.jsonl'):
         connection.execute(insert(tbl).values(
-            activityID   = r['_key'],
+            activityID   = r['activityID'],
             activityName = r.get('name'),
             description  = r.get('description'),
         ))
@@ -45,7 +45,7 @@ def import_industry_assembly_lines(connection, metadata, sourcePath, language='e
     trans = connection.begin()
     lines = groups = categories = typelists = 0
     for r in _jsonl(sourcePath, 'industryAssemblyLines.jsonl'):
-        line_id = r['_key']
+        line_id = r['assemblyLineID']
         connection.execute(insert(tbl_lines).values(
             assemblyLineID           = line_id,
             activityID               = r.get('activityID'),
@@ -94,7 +94,7 @@ def import_industry_installation_types(connection, metadata, sourcePath, languag
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'industryInstallationTypes.jsonl'):
-        type_id = r['_key']
+        type_id = r['typeID']
         for entry in r.get('assemblyLines') or []:
             connection.execute(insert(tbl).values(
                 installationTypeID  = type_id,
@@ -112,9 +112,9 @@ def import_industry_modifier_sources(connection, metadata, sourcePath, language=
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'industryModifierSources.jsonl'):
-        type_id = r['_key']
+        type_id = r['typeID']
         for activity, modifiers in r.items():
-            if activity == '_key':
+            if activity == 'typeID':
                 continue
             for mod_type, attrs in modifiers.items():
                 for attr in attrs:
@@ -139,7 +139,7 @@ def import_industry_target_filters(connection, metadata, sourcePath, language='e
     trans = connection.begin()
     filters = cats = grps = 0
     for r in _jsonl(sourcePath, 'industryTargetFilters.jsonl'):
-        fid = r['_key']
+        fid = r['targetFilterID']
         connection.execute(insert(tbl_f).values(
             targetFilterID = fid,
             name           = r.get('name'),
@@ -174,7 +174,7 @@ def import_station_operations(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=50, tableName='staOperations', columnName='description',   masterID='operationID'))
     ops = svcs = types = 0
     for r in _jsonl(sourcePath, 'stationOperations.jsonl'):
-        op_id = r['_key']
+        op_id = r['operationID']
         op_name = r.get('operationName') or {}
         desc    = r.get('description') or {}
         connection.execute(insert(tbl_ops).values(
@@ -201,7 +201,7 @@ def import_station_operations(connection, metadata, sourcePath, language='en'):
             connection.execute(insert(tbl_svcs).values(operationID=op_id, serviceID=svc_id))
             svcs += 1
         for entry in r.get('stationTypes') or []:
-            connection.execute(insert(tbl_types).values(operationID=op_id, raceID=entry['_key'], typeID=entry['_value']))
+            connection.execute(insert(tbl_types).values(operationID=op_id, raceID=entry['raceID'], typeID=entry['typeID']))
             types += 1
     trans.commit()
     _log("    {} operations, {} service rows, {} type rows".format(ops, svcs, types))
@@ -214,12 +214,12 @@ def import_station_standings_restrictions(connection, metadata, sourcePath, lang
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'stationStandingsRestrictions.jsonl'):
-        type_id = r['_key']
+        type_id = r['id']
         for entry in r.get('services') or []:
             connection.execute(insert(tbl).values(
                 typeID           = type_id,
-                serviceID        = entry['_key'],
-                standingRequired = entry['_value'],
+                serviceID        = entry['serviceID'],
+                standingRequired = entry['standing'],
             ))
             count += 1
     trans.commit()

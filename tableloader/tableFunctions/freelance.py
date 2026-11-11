@@ -30,7 +30,7 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
                               -> freelanceJobSchemaContentTags
                               -> freelanceJobSchemaParameters
 
-    The file has a single outer record whose _value is the list of job schemas.
+    The file has a single outer record whose 'schemas' is the list of job schemas.
     """
     _log("Importing freelanceJobSchemas")
     tblSchemas = Table('freelanceJobSchemas', metadata)
@@ -40,8 +40,8 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
     schemas = tags = params = 0
 
     for outer in _jsonl(sourcePath, 'freelanceJobSchemas.jsonl'):
-        for j in outer.get('_value', []):
-            job_id = j['_key']
+        for j in outer.get('schemas', []):
+            job_id = j['name']
             connection.execute(insert(tblSchemas).values(
                 jobSchemaID         = job_id,
                 title               = _en(j.get('title', {}), language),
@@ -65,7 +65,7 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
                 accepted = matcher.get('acceptedValueTypes')
                 connection.execute(insert(tblParams).values(
                     jobSchemaID        = job_id,
-                    paramKey           = p['_key'],
+                    paramKey           = p['key'],
                     acceptedValueTypes = json.dumps(accepted) if accepted is not None else None,
                 ))
                 params += 1

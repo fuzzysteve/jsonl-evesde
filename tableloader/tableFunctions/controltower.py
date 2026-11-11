@@ -25,7 +25,7 @@ def import_control_tower_resources(connection, metadata, sourcePath, language='e
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'controlTowerResources.jsonl'):
-        tower_id = r['_key']
+        tower_id = r['typeID']
         for res in r.get('resources', []):
             connection.execute(insert(tbl).values(
                 controlTowerTypeID = tower_id,

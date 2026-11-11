@@ -30,7 +30,7 @@ def import_skin_materials(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'skinMaterials.jsonl'):
         connection.execute(insert(tbl).values(
-            skinMaterialID = r['_key'],
+            skinMaterialID = r['skinMaterialID'],
             displayNameID  = None,
             materialSetID  = r.get('materialSetID'),
         ))
@@ -47,7 +47,7 @@ def import_skins(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     skins = ship_rows = 0
     for r in _jsonl(sourcePath, 'skins.jsonl'):
-        skinID = r['_key']
+        skinID = r['skinID']
         connection.execute(insert(tblSkins).values(
             skinID         = skinID,
             internalName   = r.get('internalName'),
@@ -75,7 +75,7 @@ def import_skin_licenses(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'skinLicenses.jsonl'):
         connection.execute(insert(tbl).values(
-            licenseTypeID = r['_key'],
+            licenseTypeID = r['licenseTypeKey'],
             duration      = r.get('duration'),
             skinID        = r.get('skinID'),
         ))

@@ -23,7 +23,7 @@ def import_clone_grades(connection, metadata, sourcePath, language='en'):
     cloneGrades.jsonl -> chrCloneGrades + chrCloneGradeSkills
  
     Clone grades are named skill cap presets (Alpha clone skill sets).
-    _key is the raceID bitmask (1=Caldari, 2=Minmatar, 4=Amarr, 8=Gallente).
+    cloneGradeID is the raceID bitmask (1=Caldari, 2=Minmatar, 4=Amarr, 8=Gallente).
     """
     _log("Importing cloneGrades")
     tblCloneGrades = Table('chrCloneGrades', metadata)
@@ -31,7 +31,7 @@ def import_clone_grades(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     grades = skills = 0
     for r in _jsonl(sourcePath, 'cloneGrades.jsonl'):
-        cloneGradeID = r['_key']
+        cloneGradeID = r['cloneGradeID']
         connection.execute(insert(tblCloneGrades).values(
             cloneGradeID = cloneGradeID,
             name        = r.get('name'),

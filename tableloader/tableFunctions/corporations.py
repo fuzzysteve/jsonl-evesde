@@ -34,7 +34,7 @@ def import_corporation_role_groups(connection, metadata, sourcePath, language='e
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=37, tableName='crpRoleGroups', columnName='name', masterID='roleGroupID'))
     count = 0
     for r in _jsonl(sourcePath, 'corporationRoleGroups.jsonl'):
-        gid  = r['_key']
+        gid  = r['roleGroupID']
         name = r.get('name') or {}
         connection.execute(insert(tbl).values(
             roleGroupID        = gid,
@@ -64,7 +64,7 @@ def import_corporation_roles(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=39, tableName='crpRoles', columnName='description', masterID='roleID'))
     roles = groups = 0
     for r in _jsonl(sourcePath, 'corporationRoles.jsonl'):
-        rid  = r['_key']
+        rid  = r['roleID']
         name = r.get('name') or {}
         desc = r.get('description') or {}
         connection.execute(insert(tbl_roles).values(

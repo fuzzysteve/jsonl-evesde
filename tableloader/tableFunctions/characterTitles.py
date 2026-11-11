@@ -33,7 +33,7 @@ def import_character_titles(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'characterTitles.jsonl'):
         connection.execute(insert(tbl).values(
-            titleID   = r['_key'],
+            titleID   = r['titleID'],
             titleName = _en(r.get('name', {}), language),
         ))
         count += 1

@@ -35,7 +35,7 @@ def import_fighter_abilities(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=41, tableName='fighterAbilities', columnName='tooltipText', masterID='abilityID'))
     count = 0
     for r in _jsonl(sourcePath, 'fighterAbilities.jsonl'):
-        aid     = r['_key']
+        aid     = r['fighterAbilityID']
         dname   = r.get('displayName') or {}
         tooltip = r.get('tooltipText') or {}
         connection.execute(insert(tbl).values(
@@ -65,7 +65,7 @@ def import_fighter_abilities_by_type(connection, metadata, sourcePath, language=
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'fighterAbilitiesByType.jsonl'):
-        type_id = r['_key']
+        type_id = r['typeID']
         for i, slot_key in enumerate(['abilitySlot0', 'abilitySlot1', 'abilitySlot2']):
             slot = r.get(slot_key)
             if slot is None:

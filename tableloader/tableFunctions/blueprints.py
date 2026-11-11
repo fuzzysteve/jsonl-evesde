@@ -31,7 +31,7 @@ def import_blueprints(connection,metadata,sourcePath,language='en'):
     for json_str in json_list:
         blueprints = json.loads(json_str)
 
-        blueprintid=blueprints["_key"]
+        blueprintid=blueprints["blueprintTypeKey"]
 
         stmt=insert(industryBlueprints).values(typeID=blueprintid,
                                           maxProductionLimit=blueprints["maxProductionLimit"]

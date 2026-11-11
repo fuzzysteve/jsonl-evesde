@@ -32,7 +32,7 @@ def import_archetypes(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'archetypes.jsonl'):
         connection.execute(insert(tbl).values(
-            archetypeID = r['_key'],
+            archetypeID = r['archetypeID'],
             title       = _en(r.get('title', {}), language),
             description = _en(r.get('description', {}), language),
         ))
@@ -53,7 +53,7 @@ def import_missions(connection, metadata, sourcePath, language='en'):
     missions = messages = standings = 0
 
     for r in _jsonl(sourcePath, 'missions.jsonl'):
-        mid = r['_key']
+        mid = r['missionID']
         kill = r.get('killMission') or {}
         courier = r.get('courierMission') or {}
         rewards = r.get('missionRewards') or {}
@@ -86,16 +86,16 @@ def import_missions(connection, metadata, sourcePath, language='en'):
         for msg in r.get('messages', []):
             connection.execute(insert(tblMessages).values(
                 missionID  = mid,
-                messageKey = msg['_key'],
-                text       = _en(msg, language),
+                messageKey = msg['kind'],
+                text       = _en(msg.get('text') or {}, language),
             ))
             messages += 1
 
         for standing in r.get('extraStandings', []):
             connection.execute(insert(tblStandings).values(
                 missionID = mid,
-                factionID = standing['_key'],
-                standing  = standing['_value'],
+                factionID = standing['factionID'],
+                standing  = standing['standing'],
             ))
             standings += 1
 
@@ -115,7 +115,7 @@ def import_epic_arcs(connection, metadata, sourcePath, language='en'):
     arcs = arc_missions = next_missions = 0
 
     for r in _jsonl(sourcePath, 'epicArcs.jsonl'):
-        arc_id = r['_key']
+        arc_id = r['epicArcID']
         connection.execute(insert(tblArcs).values(
             arcID              = arc_id,
             arcName            = _en(r.get('name', {}), language),
@@ -126,7 +126,7 @@ def import_epic_arcs(connection, metadata, sourcePath, language='en'):
         arcs += 1
 
         for m in r.get('missions', []):
-            mission_id = m['_key']
+            mission_id = m['missionID']
             connection.execute(insert(tblArcMiss).values(
                 arcID         = arc_id,
                 missionID     = mission_id,
@@ -157,7 +157,7 @@ def import_dungeons(connection, metadata, sourcePath, language='en'):
     dungeons = ships = 0
 
     for r in _jsonl(sourcePath, 'dungeons.jsonl'):
-        dungeon_id = r['_key']
+        dungeon_id = r['dungeonID']
         connection.execute(insert(tblDungeons).values(
             dungeonID   = dungeon_id,
             dungeonName = _en(r.get('name', {}), language),

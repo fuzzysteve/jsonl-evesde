@@ -32,7 +32,7 @@ def import_skinr_component_categories(connection, metadata, sourcePath, language
     count = 0
     for r in _jsonl(sourcePath, 'skinrComponentCategories.jsonl'):
         connection.execute(insert(tbl).values(
-            categoryID = r['_key'],
+            categoryID = r['categoryID'],
             name       = r.get('name'),
         ))
         count += 1
@@ -48,7 +48,7 @@ def import_skinr_component_rarities(connection, metadata, sourcePath, language='
     count = 0
     for r in _jsonl(sourcePath, 'skinrComponentRarities.jsonl'):
         connection.execute(insert(tbl).values(
-            rarityID = r['_key'],
+            rarityID = r['rarityID'],
             name     = _en(r.get('name', {}), language),
             rank     = r.get('rank'),
         ))
@@ -64,12 +64,12 @@ def import_skinr_component_point_values(connection, metadata, sourcePath, langua
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'skinrComponentPointValues.jsonl'):
-        category_id = r['_key']
-        for entry in r.get('_value', []):
+        category_id = r['categoryID']
+        for entry in r.get('rarities', []):
             connection.execute(insert(tbl).values(
                 categoryID = category_id,
-                rarityID   = entry['_key'],
-                points     = entry['_value'],
+                rarityID   = entry['rarityID'],
+                points     = entry['points'],
             ))
             count += 1
     trans.commit()
@@ -85,7 +85,7 @@ def import_skinr_components(connection, metadata, sourcePath, language='en'):
     components = types = 0
 
     for r in _jsonl(sourcePath, 'skinrComponents.jsonl'):
-        comp_id = r['_key']
+        comp_id = r['componentID']
         seq = r.get('sequenceBinder') or {}
         connection.execute(insert(tblComps).values(
             componentID          = comp_id,
@@ -123,7 +123,7 @@ def import_skinr_slot_categories(connection, metadata, sourcePath, language='en'
     count = 0
     for r in _jsonl(sourcePath, 'skinrSlotCategories.jsonl'):
         connection.execute(insert(tbl).values(
-            categoryID = r['_key'],
+            categoryID = r['categoryID'],
             name       = r.get('name'),
         ))
         count += 1
@@ -139,7 +139,7 @@ def import_skinr_slot_names(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'skinrSlotNames.jsonl'):
         connection.execute(insert(tbl).values(
-            slotNameID = r['_key'],
+            slotNameID = r['id'],
             name       = r.get('name'),
         ))
         count += 1
@@ -156,7 +156,7 @@ def import_skinr_slots(connection, metadata, sourcePath, language='en'):
     slots = cats = 0
 
     for r in _jsonl(sourcePath, 'skinrSlots.jsonl'):
-        slot_id = r['_key']
+        slot_id = r['slotID']
         connection.execute(insert(tblSlots).values(
             slotID     = slot_id,
             name       = _en(r.get('name', {}), language),
@@ -185,7 +185,7 @@ def import_skinr_slot_configurations(connection, metadata, sourcePath, language=
     configs = slot_rows = ship_rows = 0
 
     for r in _jsonl(sourcePath, 'skinrSlotConfigurations.jsonl'):
-        config_id = r['_key']
+        config_id = r['id']
         connection.execute(insert(tblConfigs).values(
             configID      = config_id,
             name          = r.get('name'),
@@ -219,12 +219,12 @@ def import_skinr_tier_thresholds(connection, metadata, sourcePath, language='en'
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'skinrTierThresholds.jsonl'):
-        group_id = r['_key']
-        for entry in r.get('_value', []):
+        group_id = r['infoBubbleGroupID']
+        for entry in r.get('tiers', []):
             connection.execute(insert(tbl).values(
                 groupID   = group_id,
-                tier      = entry['_key'],
-                threshold = entry['_value'],
+                tier      = entry['level'],
+                threshold = entry['maxPoints'],
             ))
             count += 1
     trans.commit()
@@ -238,8 +238,8 @@ def import_skinr_slots_to_materials(connection, metadata, sourcePath, language='
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'skinrSlotsToMaterials.jsonl'):
-        type_id = r['_key']
-        for entry in r.get('_value') or []:
+        type_id = r['factionID']
+        for entry in r.get('slots') or []:
             connection.execute(insert(tbl).values(
                 typeID     = type_id,
                 slotID     = entry['slotID'],

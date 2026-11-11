@@ -37,6 +37,22 @@ def _is_localised(v):
     return isinstance(v, dict) and bool(v) and set(v) <= _LANGS
 
 
+def _is_empty(v):
+    return v == {} or v == []
+
+
+def _strip_empty(v):
+    """Recursively drop dict entries whose value is {} or [].
+
+    The SDE API emits unset fields as empties where the zip omitted them;
+    stripping keeps JSON passed through to the DB identical to before."""
+    if isinstance(v, dict):
+        return {k: _strip_empty(x) for k, x in v.items() if not _is_empty(x)}
+    if isinstance(v, list):
+        return [_strip_empty(x) for x in v]
+    return v
+
+
 def _insert_annotations(connection, tbl, trn, owner_col, records, tcID, language):
     """Write every annotations entry of `records` to the key/value table `tbl`.
 
@@ -45,10 +61,13 @@ def _insert_annotations(connection, tbl, trn, owner_col, records, tcID, language
     anything structured is stored as JSON. Returns (annotation rows, translation rows)."""
     annotation_id = 0
     translations = 0
-    for r in sorted(records, key=lambda r: r['_key']):
+    for r in sorted(records, key=lambda r: r[owner_col]):
         ann = r.get('annotations') or {}
         for key in sorted(ann):
             v = ann[key]
+            if _is_empty(v):
+                # unset in the zip; don't let it become a row and shift annotationIDs
+                continue
             annotation_id += 1
             if _is_localised(v):
                 value = _en(v, language)
@@ -64,7 +83,7 @@ def _insert_annotations(connection, tbl, trn, owner_col, records, tcID, language
                 value = str(v)
             connection.execute(insert(tbl).values(**{
                 'annotationID':  annotation_id,
-                owner_col:       r['_key'],
+                owner_col:       r[owner_col],
                 'annotationKey': key,
                 'value':         value,
             }))
@@ -86,7 +105,7 @@ def import_military_campaigns(connection, metadata, sourcePath, language='en'):
     for r in records:
         ann = r.get('annotations') or {}
         connection.execute(insert(tbl).values(
-            campaignID       = r['_key'],
+            campaignID       = r['campaignID'],
             title            = _en(r.get('title', {}), language),
             subtitle         = _en(r.get('subtitle', {}), language),
             factionID        = r.get('issuer', {}).get('factionID'),
@@ -120,7 +139,7 @@ def import_military_campaign_objectives(connection, metadata, sourcePath, langua
 
     records = list(_jsonl(sourcePath, 'militaryCampaignObjectives.jsonl'))
     for r in records:
-        obj_id = r['_key']
+        obj_id = r['objectiveID']
         isk     = (r.get('rewards') or {}).get('isk') or {}
         lp      = (r.get('rewards') or {}).get('lp') or {}
         standing = (r.get('rewards') or {}).get('standing') or {}
@@ -138,7 +157,7 @@ def import_military_campaign_objectives(connection, metadata, sourcePath, langua
             presentingCharacterID       = r.get('presentingCharacterID'),
             issuerCorporationID         = (r.get('issuer') or {}).get('corporationID'),
             contributionMethod          = cmc.get('name'),
-            contributionParameters      = cmc.get('parameters'),
+            contributionParameters      = _strip_empty(cmc.get('parameters')),
             requiredEnlistmentFactionID = ann.get('requiredEnlistmentWithFactionID'),
             rewardIskAmount             = isk.get('amountPerInterval'),
             rewardIskInterval           = isk.get('progressInterval'),
@@ -174,7 +193,7 @@ def import_mercenary_tactical_operations(connection, metadata, sourcePath, langu
     count = 0
     for r in _jsonl(sourcePath, 'mercenaryTacticalOperations.jsonl'):
         connection.execute(insert(tbl).values(
-            operationID      = r['_key'],
+            operationID      = r['dungeonKey'],
             name             = _en(r.get('name', {}), language),
             description      = _en(r.get('description', {}), language),
             dungeonID        = r.get('dungeonID'),
@@ -196,7 +215,7 @@ def import_sovereignty_upgrades(connection, metadata, sourcePath, language='en')
     for r in _jsonl(sourcePath, 'sovereigntyUpgrades.jsonl'):
         fuel = r.get('fuel') or {}
         connection.execute(insert(tbl).values(
-            typeID                = r['_key'],
+            typeID                = r['typeID'],
             mutuallyExclusiveGroup = r.get('mutually_exclusive_group'),
             powerAllocation       = r.get('power_allocation'),
             powerProduction       = r.get('power_production'),

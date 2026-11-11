@@ -30,7 +30,7 @@ def import_graphic_material_sets(connection, metadata, sourcePath, language='en'
         secondary = r.get('colorSecondary', {})
         window    = r.get('colorWindow', {})
         connection.execute(insert(tbl).values(
-            materialSetID   = r['_key'],
+            materialSetID   = r['materialSetID'],
             description     = r.get('description'),
             sofFactionName  = r.get('sofFactionName'),
             sofRaceHint     = r.get('sofRaceHint'),
@@ -64,7 +64,7 @@ def import_graphics(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'graphics.jsonl'):
         connection.execute(insert(tbl).values(
-            graphicID      = r['_key'],
+            graphicID      = r['graphicID'],
             sofFactionName = r.get('sofFactionName'),
             graphicFile    = r.get('graphicFile'),
             sofHullName    = r.get('sofHullName'),
@@ -86,7 +86,7 @@ def import_icons(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'icons.jsonl'):
         connection.execute(insert(tbl).values(
-            iconID      = r['_key'],
+            iconID      = r['iconID'],
             iconFile    = r.get('iconFile'),
             description = None,
         ))

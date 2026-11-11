@@ -18,12 +18,14 @@ The loader pipeline has two modes:
 
 ### JSONL helpers
 
-Every loader module has a local `_jsonl(sourcePath, filename)` generator that streams records. Each record is a dict; the primary key is always `r['_key']`.
+Every loader module has a local `_jsonl(sourcePath, filename)` generator that streams records. Each record is a dict. Source files come from the SDE REST API (`sde.evetech.net`, fetched by `fetch_sde.py`), where every key has a proper name: the primary key is always the **first field** of the record (`typeID`, `groupID`, `solarSystemID`, …), and nested key/value pairs are named too (e.g. dbuffs are `{dbuffID, value}`). Check `<table>.schema.json` from the API for the names; a few are irregular (`id`, `key`, `blueprintTypeKey`, `licenseTypeKey`, `dungeonKey`).
 
 ```python
 for r in _jsonl(sourcePath, 'types.jsonl'):
-    typeID = r['_key']
+    typeID = r['typeID']
 ```
+
+The API also emits unset fields as `[]`/`{}` (the old zip omitted them) and writes whole-number floats as ints — some map statistics exceed 2^63. `.get(k) or {}` handles the empties; anything that turns a value into a row or JSON (see `military.py`'s `_strip_empty`) must skip them explicitly.
 
 ### Logging
 

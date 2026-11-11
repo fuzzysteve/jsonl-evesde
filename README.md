@@ -7,7 +7,7 @@ Loads the EVE Online Static Data Export (SDE) from CCP's JSONL format into relat
 - [uv](https://docs.astral.sh/uv/) — it installs the pinned Python (3.14, see `.python-version`) if it isn't already present
 - The SDE JSONL files extracted to a local directory (default `/opt/sde/files/`)
 - Database servers as needed (MySQL, PostgreSQL, MSSQL)
-- `flock`, `unzip`, `curl`, `git` for the automated pipeline script
+- `flock`, `curl`, `git` for the automated pipeline script
 - `pg_config` (e.g. `libpq-dev`) if `psycopg2` has to build from source
 
 Install Python dependencies into `.venv/` (versions pinned in `uv.lock`):
@@ -86,8 +86,8 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 
 `run-conversion.sh` orchestrates the full end-to-end process:
 
-1. Checks the CCP API for a new SDE build number
-2. Downloads and extracts the new JSONL zip
+1. Checks the SDE REST API (`sde.evetech.net`) for a new build number
+2. Downloads every table's JSONL from that pinned release (`fetch_sde.py`)
 3. Commits the files to a local git repo inside the SDE directory
 4. Computes which JSONL files changed (via `git diff`) and exports `SDE_CHANGED_FILES`
 5. Runs `Load.py` for each database target

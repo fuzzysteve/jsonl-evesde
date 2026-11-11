@@ -34,7 +34,7 @@ def import_notification_types(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=48, tableName='ntfTypes', columnName='displayName', masterID='typeID'))
     count = 0
     for r in _jsonl(sourcePath, 'notificationTypes.jsonl'):
-        tid   = r['_key']
+        tid   = r['notificationTypeID']
         dname = r.get('displayName') or {}
         connection.execute(insert(tbl).values(
             typeID       = tid,

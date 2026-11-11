@@ -31,7 +31,7 @@ def import_dogma_attribute_categories(connection, metadata, sourcePath, language
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaAttributeCategories.jsonl'):
         connection.execute(insert(tbl).values(
-            categoryID          = r['_key'],
+            categoryID          = r['categoryID'],
             categoryName        = r.get('name'),
             categoryDescription = r.get('description'),
         ))
@@ -45,7 +45,7 @@ def import_dogma_attributes(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaAttributes.jsonl'):
         connection.execute(insert(tbl).values(
-            attributeID   = r['_key'],
+            attributeID   = r['attributeID'],
             attributeName = r.get('name'),
             description   = r.get('description'),
             iconID        = r.get('iconID'),
@@ -75,7 +75,7 @@ def import_dogma_effects(connection, metadata, sourcePath, language='en'):
     for r in _jsonl(sourcePath, 'dogmaEffects.jsonl'):
         modifier_info = r.get('modifierInfo')
         connection.execute(insert(tbl).values(
-            effectID                       = r['_key'],
+            effectID                       = r['effectID'],
             effectName                     = r.get('name'),
             effectCategory                 = r.get('effectCategoryID'),
             preExpression                  = None,
@@ -115,7 +115,7 @@ def import_dogma_units(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     for r in _jsonl(sourcePath, 'dogmaUnits.jsonl'):
         connection.execute(insert(tbl).values(
-            unitID      = r['_key'],
+            unitID      = r['unitID'],
             unitName    = r.get('name'),
             displayName = _en(r.get('displayName'), language),
             description = _en(r.get('description'), language),
@@ -131,11 +131,11 @@ def import_dynamic_item_attributes(connection, metadata, sourcePath, language='e
     trans = connection.begin()
     attrs = mappings = 0
     for r in _jsonl(sourcePath, 'dynamicItemAttributes.jsonl'):
-        tid = r['_key']
+        tid = r['typeID']
         for a in r.get('attributeIDs') or []:
             connection.execute(insert(tbl_attr).values(
                 typeID      = tid,
-                attributeID = a['_key'],
+                attributeID = a['attributeID'],
                 min         = a.get('min'),
                 max         = a.get('max'),
                 highIsGood  = a.get('highIsGood'),

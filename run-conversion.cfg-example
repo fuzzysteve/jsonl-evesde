@@ -9,8 +9,8 @@ SQLITE_FILE=/home/scripts/jsonl-evesde/eve.db
 WEB_ROOT=/home/web/fuzzwork/htdocs/dump
 
 # SDE source URLs
-LATEST_URL=https://developers.eveonline.com/static-data/tranquility/latest.jsonl
-DOWNLOAD_URL=https://developers.eveonline.com/static-data/eve-online-static-data-latest-jsonl.zip
+# SDE REST API release index (optional; this is the default)
+SDE_API_URL=https://sde.evetech.net/tranquility/latest/
 
 # MySQL
 MYSQL_USER=yaml

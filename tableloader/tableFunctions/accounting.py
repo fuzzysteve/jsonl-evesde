@@ -35,7 +35,7 @@ def import_accounting_entry_types(connection, metadata, sourcePath, language='en
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=36, tableName='acctEntryTypes', columnName='journalMessage', masterID='entryTypeID'))
     count = 0
     for r in _jsonl(sourcePath, 'accountingEntryTypes.jsonl'):
-        eid  = r['_key']
+        eid  = r['accountingEntryTypeID']
         name = r.get('name') or {}
         msg  = r.get('journalMessage') or {}
         connection.execute(insert(tbl).values(

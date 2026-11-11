@@ -27,7 +27,7 @@ def import_translation_languages(connection, metadata, sourcePath, language='en'
     for numeric_id, r in enumerate(_jsonl(sourcePath, 'translationLanguages.jsonl'), start=1):
         connection.execute(insert(tbl).values(
             numericLanguageID = numeric_id,
-            languageID        = r['_key'],
+            languageID        = r['language'],
             languageName      = r.get('name'),
         ))
         count += 1

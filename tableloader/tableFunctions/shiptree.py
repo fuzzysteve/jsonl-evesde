@@ -32,7 +32,7 @@ def import_ship_tree_elements(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'shipTreeElements.jsonl'):
         connection.execute(insert(tbl).values(
-            elementID   = r['_key'],
+            elementID   = r['elementID'],
             name        = _en(r.get('name', {}), language),
             description = _en(r.get('description', {}), language),
             icon        = r.get('icon'),
@@ -52,7 +52,7 @@ def import_ship_tree_groups(connection, metadata, sourcePath, language='en'):
     groups = elements = skills = 0
 
     for r in _jsonl(sourcePath, 'shipTreeGroups.jsonl'):
-        group_id = r['_key']
+        group_id = r['groupID']
         connection.execute(insert(tblGroups).values(
             groupID      = group_id,
             name         = _en(r.get('name', {}), language),
@@ -67,18 +67,18 @@ def import_ship_tree_groups(connection, metadata, sourcePath, language='en'):
         for e in r.get('elements', []):
             connection.execute(insert(tblElems).values(
                 groupID   = group_id,
-                elementID = e['_key'],
-                value     = e['_value'],
+                elementID = e['position'],
+                value     = e['elementID'],
             ))
             elements += 1
 
         for faction_entry in r.get('preReqSkills', []):
-            faction_id = faction_entry['_key']
+            faction_id = faction_entry['factionID']
             for skill in faction_entry.get('skills', []):
                 connection.execute(insert(tblSkills).values(
                     groupID   = group_id,
                     factionID = faction_id,
-                    skillID   = skill['_key'],
+                    skillID   = skill['skillTypeID'],
                     level     = skill.get('level'),
                     display   = skill.get('display'),
                 ))
@@ -97,7 +97,7 @@ def import_ship_tree_factions(connection, metadata, sourcePath, language='en'):
     factions = elements = 0
 
     for r in _jsonl(sourcePath, 'shipTreeFactions.jsonl'):
-        faction_id = r['_key']
+        faction_id = r['factionID']
         connection.execute(insert(tblFactions).values(
             factionID   = faction_id,
             description = _en(r.get('description', {}), language),
@@ -108,8 +108,8 @@ def import_ship_tree_factions(connection, metadata, sourcePath, language='en'):
         for e in r.get('elements', []):
             connection.execute(insert(tblElems).values(
                 factionID = faction_id,
-                elementID = e['_key'],
-                value     = e['_value'],
+                elementID = e['position'],
+                value     = e['elementID'],
             ))
             elements += 1
 
@@ -125,13 +125,13 @@ def import_type_elements(connection, metadata, sourcePath, language='en'):
     types = rows = 0
 
     for r in _jsonl(sourcePath, 'typeElements.jsonl'):
-        type_id = r['_key']
+        type_id = r['typeID']
         types += 1
         for e in r.get('elements', []):
             connection.execute(insert(tbl).values(
                 typeID    = type_id,
-                elementID = e['_key'],
-                value     = e['_value'],
+                elementID = e['position'],
+                value     = e['elementID'],
             ))
             rows += 1
 

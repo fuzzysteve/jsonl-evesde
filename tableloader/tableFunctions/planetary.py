@@ -29,7 +29,7 @@ def import_planet_resources(connection, metadata, sourcePath, language='en'):
     planetResources.jsonl -> planetResources
 
     New table — add definition from planetResources_table_definition.py to tables.py.
-    _key = celestialID (a planet itemID from mapDenormalize).
+    celestialID = (a planet itemID from mapDenormalize).
     """
     _log("Importing planetResources")
     tbl = Table('planetResources', metadata)
@@ -38,7 +38,7 @@ def import_planet_resources(connection, metadata, sourcePath, language='en'):
     for r in _jsonl(sourcePath, 'planetResources.jsonl'):
         reagent = r.get('reagent') or {}
         connection.execute(insert(tbl).values(
-            celestialID          = r['_key'],
+            celestialID          = r['celestialID'],
             power                = r.get('power'),
             workforce            = r.get('workforce'),
             reagentTypeID        = reagent.get('type_id'),
@@ -61,7 +61,7 @@ def import_planet_schematics(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'planetSchematics.jsonl'):
-        sid = r['_key']
+        sid = r['schematicID']
         connection.execute(insert(tblSchematics).values(
             schematicID   = sid,
             schematicName = _en(r.get('name', {}), language),
@@ -75,7 +75,7 @@ def import_planet_schematics(connection, metadata, sourcePath, language='en'):
         for t in r.get('types', []):
             connection.execute(insert(tblTypeMap).values(
                 schematicID = sid,
-                typeID      = t['_key'],
+                typeID      = t['typeID'],
                 quantity    = t.get('quantity'),
                 isInput     = t.get('isInput'),
             ))

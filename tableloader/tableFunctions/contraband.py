@@ -25,10 +25,10 @@ def import_contraband_types(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'contrabandTypes.jsonl'):
-        type_id = r['_key']
+        type_id = r['typeID']
         for faction in r.get('factions', []):
             connection.execute(insert(tbl).values(
-                factionID        = faction['_key'],
+                factionID        = faction['factionID'],
                 typeID           = type_id,
                 standingLoss     = faction.get('standingLoss'),
                 confiscateMinSec = faction.get('confiscateMinSec'),

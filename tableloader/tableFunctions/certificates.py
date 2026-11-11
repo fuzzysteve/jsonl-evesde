@@ -42,7 +42,7 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=17, tableName='certCerts', columnName='name', masterID='certID'))
     certs = skills = 0
     for r in _jsonl(sourcePath, 'certificates.jsonl'):
-        certID = r['_key']
+        certID = r['certificateID']
         connection.execute(insert(certCerts).values(
             certID      = certID,
             description = _en(r.get('description', {}), language),
@@ -53,7 +53,7 @@ def import_certificates(connection, metadata, sourcePath, language='en'):
         for typeID in r.get('recommendedFor') or []:
             connection.execute(insert(certRecommendedTypes).values(certID=certID, typeID=typeID))
         for skill in r.get('skillTypes', []):
-            skillID = skill['_key']
+            skillID = skill['typeID']
             for levelText, certLevelInt in _CERT_LEVELS.items():
                 skillLevel = skill.get(levelText)
                 if skillLevel is not None:
@@ -81,10 +81,10 @@ def import_masteries(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     count = 0
     for r in _jsonl(sourcePath, 'masteries.jsonl'):
-        typeID = r['_key']
-        for level_entry in r.get('_value', []):
-            masteryLevel = level_entry['_key']
-            for certID in level_entry.get('_value', []):
+        typeID = r['typeID']
+        for level_entry in r.get('levels', []):
+            masteryLevel = level_entry['level']
+            for certID in level_entry.get('certificateIDs', []):
                 connection.execute(insert(tbl).values(
                     typeID       = typeID,
                     masteryLevel = masteryLevel,

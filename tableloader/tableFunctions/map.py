@@ -113,24 +113,24 @@ def import_map(connection, metadata, sourcePath, language='en'):
     dest_sys_name  = {}
 
     for r in _jsonl(sourcePath, 'mapRegions.jsonl'):
-        region_faction[r['_key']] = r.get('factionID')
+        region_faction[r['regionID']] = r.get('factionID')
 
     for r in _jsonl(sourcePath, 'mapConstellations.jsonl'):
         rid = r.get('regionID')
-        const_faction[r['_key']] = r.get('factionID') or region_faction.get(rid)
+        const_faction[r['constellationID']] = r.get('factionID') or region_faction.get(rid)
 
     for r in _jsonl(sourcePath, 'mapSolarSystems.jsonl'):
         sysName = _name(r, language)
-        sys_info[r['_key']] = (
+        sys_info[r['solarSystemID']] = (
             r.get('regionID'),
             r.get('constellationID'),
             r.get('securityStatus'),
             sysName,
         )
-        dest_sys_name[r['_key']] = sysName
+        dest_sys_name[r['solarSystemID']] = sysName
 
     for r in _jsonl(sourcePath, 'mapStars.jsonl'):
-        star_lookup[r.get('solarSystemID')] = r['_key']
+        star_lookup[r.get('solarSystemID')] = r['starID']
 
     # Row accumulators
     region_rows  = []
@@ -152,7 +152,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         p          = r.get('position', {})
         regionName = _trunc(_name(r, language))
         region_rows.append(dict(
-            regionID   = r['_key'],
+            regionID   = r['regionID'],
             regionName = regionName,
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
             xMin=None, xMax=None, yMin=None, yMax=None, zMin=None, zMax=None,
@@ -161,15 +161,15 @@ def import_map(connection, metadata, sourcePath, language='en'):
             radius     = None,
         ))
         den_rows.append(dict(
-            itemID   = r['_key'],
+            itemID   = r['regionID'],
             typeID   = 3,
             groupID  = 3,
-            regionID = r['_key'],
+            regionID = r['regionID'],
             itemName = regionName,
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
         ))
         if r.get('wormholeClassID') is not None:
-            wh_rows.append(dict(locationID=r['_key'], wormholeClassID=r['wormholeClassID']))
+            wh_rows.append(dict(locationID=r['regionID'], wormholeClassID=r['wormholeClassID']))
     _log("    {} rows".format(len(region_rows)))
 
     # ------------------------------------------------------------------
@@ -183,7 +183,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         constName = _trunc(_name(r, language))
         const_rows.append(dict(
             regionID          = rid,
-            constellationID   = r['_key'],
+            constellationID   = r['constellationID'],
             constellationName = constName,
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
             xMin=None, xMax=None, yMin=None, yMax=None, zMin=None, zMax=None,
@@ -191,16 +191,16 @@ def import_map(connection, metadata, sourcePath, language='en'):
             radius    = None,
         ))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['constellationID'],
             typeID          = 4,
             groupID         = 4,
             regionID        = rid,
-            constellationID = r['_key'],
+            constellationID = r['constellationID'],
             itemName        = constName,
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
         ))
         if r.get('wormholeClassID') is not None:
-            wh_rows.append(dict(locationID=r['_key'], wormholeClassID=r['wormholeClassID']))
+            wh_rows.append(dict(locationID=r['constellationID'], wormholeClassID=r['wormholeClassID']))
     _log("    {} rows".format(len(const_rows)))
 
     # ------------------------------------------------------------------
@@ -210,13 +210,13 @@ def import_map(connection, metadata, sourcePath, language='en'):
     for r in _jsonl(sourcePath, 'mapSolarSystems.jsonl'):
         p   = r.get('position', {})
         p2d = r.get('position2D', {})
-        rid, cid, sec, sysName = sys_info.get(r['_key'], (None, None, None, None))
+        rid, cid, sec, sysName = sys_info.get(r['solarSystemID'], (None, None, None, None))
         sysName = sysName or _name(r, language)
         faction = r.get('factionID') or const_faction.get(cid) or region_faction.get(rid)
         sys_rows.append(dict(
             regionID        = rid,
             constellationID = cid,
-            solarSystemID   = r['_key'],
+            solarSystemID   = r['solarSystemID'],
             solarSystemName = _trunc(sysName),
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
             xMin=p2d.get('x'), xMax=None,
@@ -240,10 +240,10 @@ def import_map(connection, metadata, sourcePath, language='en'):
             visualEffect  = r.get('visualEffect'),
         ))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['solarSystemID'],
             typeID          = 5,
             groupID         = 5,
-            solarSystemID   = r['_key'],
+            solarSystemID   = r['solarSystemID'],
             constellationID = cid,
             regionID        = rid,
             x=p.get('x'), y=p.get('y'), z=p.get('z'),
@@ -252,11 +252,11 @@ def import_map(connection, metadata, sourcePath, language='en'):
             security        = sec,
         ))
         if r.get('wormholeClassID') is not None:
-            wh_rows.append(dict(locationID=r['_key'], wormholeClassID=r['wormholeClassID']))
+            wh_rows.append(dict(locationID=r['solarSystemID'], wormholeClassID=r['wormholeClassID']))
         for anchorType, field in (('category', 'disallowedAnchorCategories'),
                                   ('group', 'disallowedAnchorGroups')):
             for anchorID in set(r.get(field) or []):
-                anchor_rows.append(dict(solarSystemID=r['_key'], anchorType=anchorType, anchorID=anchorID))
+                anchor_rows.append(dict(solarSystemID=r['solarSystemID'], anchorType=anchorType, anchorID=anchorID))
     _log("    {} rows".format(len(sys_rows)))
     _log("    {} disallowed anchor rows".format(len(anchor_rows)))
 
@@ -269,10 +269,10 @@ def import_map(connection, metadata, sourcePath, language='en'):
         sid = r.get('solarSystemID')
         rid, cid, sec, sysName = sys_info.get(sid, (None, None, None, None))
         stats = dict(r.get('statistics') or {})
-        stats['celestialID'] = r['_key']
+        stats['celestialID'] = r['starID']
         stat_rows.append(_norm(stats, stat_col_keys))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['starID'],
             typeID          = r.get('typeID'),
             groupID         = 6,
             solarSystemID   = sid,
@@ -297,10 +297,10 @@ def import_map(connection, metadata, sourcePath, language='en'):
         p     = r.get('position', {})
         stats = dict(r.get('statistics') or {})
         attrs = r.get('attributes') or {}
-        stats['celestialID'] = r['_key']
+        stats['celestialID'] = r['planetID']
         stat_rows.append(_norm(stats, stat_col_keys))
         graphic_rows.append(_norm(dict(
-            celestialID  = r['_key'],
+            celestialID  = r['planetID'],
             heightMap1   = attrs.get('heightMap1'),
             heightMap2   = attrs.get('heightMap2'),
             shaderPreset = attrs.get('shaderPreset'),
@@ -312,7 +312,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         else:
             itemName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['planetID'],
             typeID          = r.get('typeID'),
             groupID         = _grouplookup(connection, metadata, r.get('typeID')),
             solarSystemID   = sid,
@@ -339,10 +339,10 @@ def import_map(connection, metadata, sourcePath, language='en'):
         p     = r.get('position', {})
         stats = dict(r.get('statistics') or {})
         attrs = r.get('attributes') or {}
-        stats['celestialID'] = r['_key']
+        stats['celestialID'] = r['moonID']
         stat_rows.append(_norm(stats, stat_col_keys))
         graphic_rows.append(_norm(dict(
-            celestialID  = r['_key'],
+            celestialID  = r['moonID'],
             heightMap1   = attrs.get('heightMap1'),
             heightMap2   = attrs.get('heightMap2'),
             shaderPreset = attrs.get('shaderPreset'),
@@ -351,7 +351,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         orbitName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
         itemName  = '{} - Moon {}'.format(orbitName, r.get('orbitIndex'))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['moonID'],
             typeID          = r.get('typeID'),
             groupID         = _grouplookup(connection, metadata, r.get('typeID')),
             solarSystemID   = sid,
@@ -378,7 +378,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         rid, cid, sec, sysName = sys_info.get(sid, (None, None, None, None))
         p     = r.get('position', {})
         stats = dict(r.get('statistics') or {})
-        stats['celestialID'] = r['_key']
+        stats['celestialID'] = r['asteroidBeltID']
         stat_rows.append(_norm(stats, stat_col_keys))
         unique = r.get('uniqueName') or {}
         if isinstance(unique, dict) and unique.get(language):
@@ -387,7 +387,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             orbitName = '{} {}'.format(sysName or '', r.get('celestialIndex', ''))
             itemName  = '{} - Asteroid Belt {}'.format(orbitName, r.get('orbitIndex'))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['asteroidBeltID'],
             typeID          = r.get('typeID'),
             groupID         = _grouplookup(connection, metadata, r.get('typeID')),
             solarSystemID   = sid,
@@ -417,11 +417,11 @@ def import_map(connection, metadata, sourcePath, language='en'):
         dest_sys_id = dest.get('solarSystemID')
         dest_name   = dest_sys_name.get(dest_sys_id, str(dest_sys_id))
         jump_rows.append(dict(
-            stargateID    = r['_key'],
+            stargateID    = r['stargateID'],
             destinationID = dest.get('stargateID'),
         ))
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['stargateID'],
             typeID          = r.get('typeID'),
             groupID         = _grouplookup(connection, metadata, r.get('typeID')),
             solarSystemID   = sid,
@@ -444,7 +444,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
         rid, cid, sec, sysName = sys_info.get(sid, (None, None, None, None))
         p = r.get('position', {})
         den_rows.append(dict(
-            itemID          = r['_key'],
+            itemID          = r['sunID'],
             typeID          = r.get('typeID'),
             groupID         = 995,
             solarSystemID   = sid,
@@ -455,7 +455,7 @@ def import_map(connection, metadata, sourcePath, language='en'):
             security        = 0,
         ))
         sec_sun_rows.append(dict(
-            itemID             = r['_key'],
+            itemID             = r['sunID'],
             solarSystemID      = sid,
             typeID             = r.get('typeID'),
             effectBeaconTypeID = r.get('effectBeaconTypeID'),
@@ -511,17 +511,17 @@ def import_npc_stations(connection, metadata, sourcePath, language='en'):
 
     corp_names = {}
     for r in _jsonl(sourcePath, 'npcCorporations.jsonl'):
-        corp_names[r['_key']] = _name(r, language)
+        corp_names[r['corporationID']] = _name(r, language)
 
     op_names = {}
     for r in _jsonl(sourcePath, 'stationOperations.jsonl'):
-        op_names[r['_key']] = _en(r.get('operationName') or {}, language)
+        op_names[r['operationID']] = _en(r.get('operationName') or {}, language)
 
     station_rows = []
     station_den_rows = []
 
     for r in _jsonl(sourcePath, 'npcStations.jsonl'):
-        stationID = r['_key']
+        stationID = r['stationID']
         sid       = r.get('solarSystemID')
         const_id, region_id, sec = sys_info.get(sid, (None, None, None))
         p         = r.get('position', {})
@@ -593,7 +593,7 @@ def import_station_services(connection, metadata, sourcePath, language='en'):
     rows = []
     for r in _jsonl(sourcePath, 'stationServices.jsonl'):
         rows.append(dict(
-            serviceID   = r['_key'],
+            serviceID   = r['serviceID'],
             serviceName = _en(r.get('serviceName') or {}, language),
             description = _en(r.get('description') or {}, language),
         ))
@@ -611,7 +611,7 @@ def import_landmarks(connection, metadata, sourcePath, language='en'):
     for r in _jsonl(sourcePath, 'landmarks.jsonl'):
         p = r.get('position', {})
         rows.append(dict(
-            landmarkID   = r['_key'],
+            landmarkID   = r['landmarkID'],
             landmarkName = _en(r.get('name') or {}, language),
             description  = _en(r.get('description') or {}, language),
             locationID   = r.get('locationID'),

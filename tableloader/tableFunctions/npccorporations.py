@@ -32,7 +32,7 @@ def import_corporation_activities(connection, metadata, sourcePath, language='en
     count = 0
     for r in _jsonl(sourcePath, 'corporationActivities.jsonl'):
         connection.execute(insert(tbl).values(
-            activityID   = r['_key'],
+            activityID   = r['activityID'],
             activityName = _en(r.get('name', {}), language),
             description  = None,
         ))
@@ -51,14 +51,14 @@ def import_npc_corporation_divisions(connection, metadata, sourcePath, language=
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=24, tableName='crpNPCDivisions', columnName='divisionName', masterID='divisionID'))
     for r in _jsonl(sourcePath, 'npcCorporationDivisions.jsonl'):
         connection.execute(insert(tbl).values(
-            divisionID   = r['_key'],
+            divisionID   = r['divisionID'],
             divisionName = _en(r.get('name', {}), language),
             description  = _en(r.get('description', {}), language),
             leaderType   = _en(r.get('leaderTypeName', {}), language),
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(
-                tcID=24, keyID=r['_key'], languageID=lang, text=text))
+                tcID=24, keyID=r['divisionID'], languageID=lang, text=text))
     trans.commit()
 
 
@@ -88,14 +88,14 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trnTranslationColumns).values(tcGroupID=None, tcID=20, tableName='crpNPCCorporations', columnName='corporationName', masterID='corporationID'))
     corps = 0
     for r in _jsonl(sourcePath, 'npcCorporations.jsonl'):
-        corpID = r['_key']
+        corpID = r['corporationID']
 
         # Investors: table has 4 fixed slots
         investors = r.get('investors', [])[:4]
         inv = {}
         for i in range(4):
-            inv['investorID{}'.format(i + 1)]     = investors[i]['_key']    if i < len(investors) else None
-            inv['investorShares{}'.format(i + 1)] = investors[i]['_value']  if i < len(investors) else None
+            inv['investorID{}'.format(i + 1)]     = investors[i]['corporationID'] if i < len(investors) else None
+            inv['investorShares{}'.format(i + 1)] = investors[i]['shares'] if i < len(investors) else None
 
         connection.execute(insert(tbl).values(
             corporationID      = corpID,
@@ -130,7 +130,7 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
         for div in r.get('divisions', []):
             connection.execute(insert(tblDivs).values(
                 corporationID = corpID,
-                divisionID    = div['_key'],
+                divisionID    = div['divisionID'],
                 size          = div.get('size'),
                 divisionNumber = div.get('divisionNumber'),
                 leaderID      = div.get('leaderID'),
@@ -138,13 +138,13 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
 
         seen_trades = set()
         for trade in r.get('corporationTrades', []):
-            typeID = trade['_key']
+            typeID = trade['typeID']
             if typeID not in seen_trades:
                 seen_trades.add(typeID)
                 connection.execute(insert(tblTrades).values(
                     corporationID = corpID,
                     typeID        = typeID,
-                    value         = trade.get('_value'),
+                    value         = trade.get('value'),
                 ))
 
         for lpTableID in r.get('lpOfferTables') or []:
@@ -156,8 +156,8 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
         for rate in r.get('exchangeRates') or []:
             connection.execute(insert(tblExchange).values(
                 corporationID   = corpID,
-                toCorporationID = rate['_key'],
-                rate            = rate['_value'],
+                toCorporationID = rate['corporationID'],
+                rate            = rate['rate'],
             ))
 
         corps += 1

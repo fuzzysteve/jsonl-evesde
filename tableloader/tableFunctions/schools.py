@@ -39,7 +39,7 @@ def import_schools(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=45, tableName='chrSchools', columnName='characterDescription', masterID='schoolID'))
     schools = agents = stations = 0
     for r in _jsonl(sourcePath, 'schools.jsonl'):
-        sid   = r['_key']
+        sid   = r['schoolID']
         name  = r.get('name') or {}
         desc  = r.get('description') or {}
         title = r.get('title') or {}
@@ -86,7 +86,7 @@ def import_school_map(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'schoolMap.jsonl'):
         connection.execute(insert(tbl).values(
-            id            = r['_key'],
+            id            = r['schoolMapID'],
             schoolID      = r.get('schoolID'),
             solarSystemID = r.get('solarSystemID'),
         ))
@@ -108,7 +108,7 @@ def import_skill_plans(connection, metadata, sourcePath, language='en'):
     connection.execute(insert(trn_cols).values(tcGroupID=None, tcID=47, tableName='skillPlans', columnName='description', masterID='skillPlanID'))
     plans = milestones = reqs = 0
     for r in _jsonl(sourcePath, 'skillPlans.jsonl'):
-        pid  = r['_key']
+        pid  = r['skillPlanID']
         name = r.get('name') or {}
         desc = r.get('description') or {}
         connection.execute(insert(tbl_plans).values(
@@ -158,7 +158,7 @@ def import_expert_systems(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     systems = skills = 0
     for r in _jsonl(sourcePath, 'expertSystems.jsonl'):
-        tid = r['_key']
+        tid = r['typeID']
         connection.execute(insert(tbl_es).values(
             typeID       = tid,
             durationDays = r.get('durationDays'),

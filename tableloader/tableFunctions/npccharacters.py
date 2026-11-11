@@ -37,7 +37,7 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
     total = agents = research = 0
     for r in _jsonl(sourcePath, 'npcCharacters.jsonl'):
         connection.execute(insert(tblChars).values(
-            characterID   = r['_key'],
+            characterID   = r['characterID'],
             characterName = _en(r.get('name', {}), language),
             corporationID = r.get('corporationID'),
             locationID    = r.get('locationID'),
@@ -55,7 +55,7 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
         agent = r.get('agent')
         if agent:
             connection.execute(insert(tblAgents).values(
-                agentID       = r['_key'],
+                agentID       = r['characterID'],
                 divisionID    = agent.get('divisionID'),
                 corporationID = r.get('corporationID'),
                 locationID    = r.get('locationID'),
@@ -67,7 +67,7 @@ def import_npc_characters(connection, metadata, sourcePath, language='en'):
             agents += 1
         for skill in r.get('skills', []):
             connection.execute(insert(tblResearch).values(
-                agentID = r['_key'],
+                agentID = r['characterID'],
                 typeID  = skill['typeID'],
             ))
             research += 1

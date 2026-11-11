@@ -26,7 +26,7 @@ def import_applied_proximity_effects(connection, metadata, sourcePath, language=
     trans = connection.begin()
     main = dbuffs = 0
     for r in _jsonl(sourcePath, 'appliedProximityEffects.jsonl'):
-        tid = r['_key']
+        tid = r['typeID']
         connection.execute(insert(tbl_main).values(
             typeID       = tid,
             delaySeconds = r.get('delaySeconds'),
@@ -34,7 +34,7 @@ def import_applied_proximity_effects(connection, metadata, sourcePath, language=
         ))
         main += 1
         for d in r.get('dbuffs') or []:
-            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
+            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['dbuffID'], value=d['value']))
             dbuffs += 1
     trans.commit()
     _log("    {} effects, {} dbuff rows".format(main, dbuffs))
@@ -48,7 +48,7 @@ def import_proximity_traps(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'proximityTrap.jsonl'):
         connection.execute(insert(tbl).values(
-            typeID                  = r['_key'],
+            typeID                  = r['typeID'],
             dbuffDuration           = r.get('dbuffDuration'),
             showPerimeterLights     = r.get('showPerimeterLights'),
             triggerDelay            = r.get('triggerDelay'),
@@ -68,7 +68,7 @@ def import_link_with_ship(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     main = dbuffs = 0
     for r in _jsonl(sourcePath, 'linkWithShip.jsonl'):
-        tid = r['_key']
+        tid = r['typeID']
         connection.execute(insert(tbl_main).values(
             typeID                      = tid,
             applyPvpFlag                = r.get('applyPvpFlag'),
@@ -86,7 +86,7 @@ def import_link_with_ship(connection, metadata, sourcePath, language='en'):
         ))
         main += 1
         for d in r.get('dbuffs') or []:
-            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
+            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['dbuffID'], value=d['value']))
             dbuffs += 1
     trans.commit()
     _log("    {} records, {} dbuff rows".format(main, dbuffs))
@@ -100,7 +100,7 @@ def import_system_dbuff_emitters(connection, metadata, sourcePath, language='en'
     trans = connection.begin()
     main = dbuffs = 0
     for r in _jsonl(sourcePath, 'systemDbuffEmitters.jsonl'):
-        tid = r['_key']
+        tid = r['typeID']
         connection.execute(insert(tbl_main).values(
             typeID           = tid,
             duration         = r.get('duration'),
@@ -109,7 +109,7 @@ def import_system_dbuff_emitters(connection, metadata, sourcePath, language='en'
         ))
         main += 1
         for d in r.get('dbuffs') or []:
-            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['_key'], value=d['_value']))
+            connection.execute(insert(tbl_dbuff).values(typeID=tid, dbuffID=d['dbuffCollectionID'], value=d['value']))
             dbuffs += 1
     trans.commit()
     _log("    {} emitters, {} dbuff rows".format(main, dbuffs))
@@ -123,14 +123,14 @@ def import_system_wide_effects(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     main = dbuffs = 0
     for r in _jsonl(sourcePath, 'systemWideEffects.jsonl'):
-        ssid = r['_key']
+        ssid = r['typeID']
         connection.execute(insert(tbl_main).values(
             solarSystemID      = ssid,
             eligibleTypeListID = r.get('eligibleTypeListID'),
         ))
         main += 1
         for d in r.get('dbuffs') or []:
-            connection.execute(insert(tbl_dbuff).values(solarSystemID=ssid, dbuffID=d['_key'], value=d['_value']))
+            connection.execute(insert(tbl_dbuff).values(solarSystemID=ssid, dbuffID=d['dbuffID'], value=d['value']))
             dbuffs += 1
     trans.commit()
     _log("    {} systems, {} dbuff rows".format(main, dbuffs))
@@ -144,7 +144,7 @@ def import_metenox_moon_drills(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'metenoxMoonDrill.jsonl'):
         connection.execute(insert(tbl).values(
-            typeID                   = r['_key'],
+            typeID                   = r['typeID'],
             miningCycleTime          = r.get('miningCycleTime'),
             miningEfficiency         = r.get('miningEfficiency'),
             reagentsConsumedPerCycle = r.get('reagentsConsumedPerCycle'),
@@ -165,7 +165,7 @@ def import_dbuff_collections(connection, metadata, sourcePath, language='en'):
     trans = connection.begin()
     main = mods = 0
     for r in _jsonl(sourcePath, 'dbuffCollections.jsonl'):
-        did = r['_key']
+        did = r['dbuffCollectionID']
         name = r.get('displayName') or {}
         connection.execute(insert(tbl_main).values(
             dbuffID              = did,
