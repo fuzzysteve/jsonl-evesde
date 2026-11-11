@@ -25,7 +25,7 @@ for r in _jsonl(sourcePath, 'types.jsonl'):
     typeID = r['typeID']
 ```
 
-The API also emits unset fields as `[]`/`{}` (the old zip omitted them) and writes whole-number floats as ints — some map statistics exceed 2^63. `.get(k) or {}` handles the empties; anything that turns a value into a row or JSON (see `military.py`'s `_strip_empty`) must skip them explicitly.
+Unset optional fields are omitted, but older releases emitted them as `[]`/`{}`, so keep using `.get(k) or {}`, and anything that turns a value into a row or JSON (see `military.py`'s `_strip_empty`) should still skip empties. Large whole numbers (map positions and statistics, some above 2^63) arrive as floats like `1.0249999925043528e+18`; each `_jsonl` passes `parse_float=_num`, which turns whole-number floats >= 2^53 into exact ints, because SQL Server mis-rounds the scientific-notation text by 1 ULP but converts integers exactly. Keep `_num` in any new `_jsonl` copy.
 
 ### Logging
 
