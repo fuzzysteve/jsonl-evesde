@@ -63,6 +63,8 @@ def import_proximity_traps(connection, metadata, sourcePath, language='en'):
             triggerDelay            = r.get('triggerDelay'),
             triggerFilterTypeListID = r.get('triggerFilterTypeListID'),
             triggerRange            = r.get('triggerRange'),
+            forceDecloakDuration    = r.get('forceDecloakDuration'),
+            resetDelay              = r.get('resetDelay'),
         ))
         count += 1
     trans.commit()
@@ -136,6 +138,7 @@ def import_system_wide_effects(connection, metadata, sourcePath, language='en'):
         connection.execute(insert(tbl_main).values(
             solarSystemID      = ssid,
             eligibleTypeListID = r.get('eligibleTypeListID'),
+            environmentTypeID  = r.get('environmentTypeID'),
         ))
         main += 1
         for d in r.get('dbuffs') or []:

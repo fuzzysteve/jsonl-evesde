@@ -145,6 +145,8 @@ def import_factions(connection, metadata, sourcePath, language='en'):
             stationSystemCount   = None,
             militiaCorporationID = r.get('militiaCorporationID'),
             iconID               = r.get('iconID'),
+            flatLogo             = r.get('flatLogo'),
+            flatLogoWithName     = r.get('flatLogoWithName'),
         ))
         for lang, text in r.get('name', {}).items():
             connection.execute(insert(trnTranslations).values(

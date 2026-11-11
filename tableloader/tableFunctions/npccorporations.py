@@ -133,6 +133,11 @@ def import_npc_corporations(connection, metadata, sourcePath, language='en'):
             mainActivityID     = r.get('mainActivityID'),
             secondaryActivityID = r.get('secondaryActivityID'),
             taxRate            = r.get('taxRate'),
+            deleted            = r.get('deleted'),
+            memberLimit        = r.get('memberLimit'),
+            minimumJoinStanding = r.get('minimumJoinStanding'),
+            hasPlayerPersonnelManager  = r.get('hasPlayerPersonnelManager'),
+            sendCharTerminationMessage = r.get('sendCharTerminationMessage'),
             **inv,
         ))
 

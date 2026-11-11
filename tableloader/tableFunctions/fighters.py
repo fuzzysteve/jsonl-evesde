@@ -55,6 +55,7 @@ def import_fighter_abilities(connection, metadata, sourcePath, language='en'):
             iconID           = r.get('iconID'),
             targetMode       = r.get('targetMode'),
             tooltipText      = _en(tooltip, language),
+            turretGraphicID  = r.get('turretGraphicID'),
         ))
         count += 1
         if isinstance(dname, dict):

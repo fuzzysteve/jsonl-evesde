@@ -276,6 +276,7 @@ def import_meta_groups(connection, metadata, sourcePath, language='en'):
             metaGroupName = _en(r.get('name', {}), language),
             description   = _en(r.get('description', {}), language),
             iconID        = r.get('iconID'),
+            iconSuffix    = r.get('iconSuffix'),
         ))
         for lang, text in r.get('name', {}).items():
             trn_rows.append(dict(tcID=15, keyID=r['metaGroupID'], languageID=lang, text=text))

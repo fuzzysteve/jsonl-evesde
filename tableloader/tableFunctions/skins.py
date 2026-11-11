@@ -64,6 +64,7 @@ def import_skins(connection, metadata, sourcePath, language='en'):
             visibleTranquility = r.get('visibleTranquility'),
             visibleSerenity    = r.get('visibleSerenity'),
             isStructureSkin    = r.get('isStructureSkin'),
+            allowCCPDevs       = r.get('allowCCPDevs'),
         ))
         skins += 1
         for typeID in r.get('types', []):
@@ -87,6 +88,7 @@ def import_skin_licenses(connection, metadata, sourcePath, language='en'):
             licenseTypeID = r['licenseTypeKey'],
             duration      = r.get('duration'),
             skinID        = r.get('skinID'),
+            isSingleUse   = r.get('isSingleUse'),
         ))
         count += 1
     trans.commit()

@@ -63,6 +63,7 @@ def import_schools(connection, metadata, sourcePath, language='en'):
             description          = _en(desc, language),
             title                = _en(title, language),
             characterDescription = _en(cdesc, language),
+            isStarterSpaceSchool = r.get('isStarterSpaceSchool'),
         ))
         schools += 1
         if isinstance(name, dict):
@@ -127,6 +128,7 @@ def import_skill_plans(connection, metadata, sourcePath, language='en'):
             internalName = r.get('internalName'),
             name         = _en(name, language),
             description  = _en(desc, language),
+            npcCorporationDivisionID = r.get('npcCorporationDivision'),
         ))
         plans += 1
         if isinstance(name, dict):

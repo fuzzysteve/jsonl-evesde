@@ -81,6 +81,7 @@ def import_missions(connection, metadata, sourcePath, language='en'):
             initialAgentGiftQty     = r.get('initialAgentGiftQuantity'),
             killDungeonID           = kill.get('dungeonID'),
             killObjectiveQty        = kill.get('objectiveQuantity'),
+            killDropContainerTypeID = kill.get('dropItemInMissionContainer'),
             courierObjectiveTypeID  = courier.get('objectiveTypeID'),
             courierObjectiveQty     = courier.get('objectiveQuantity'),
             courierObjectiveSingleton = courier.get('objectiveSingleton'),
@@ -171,6 +172,7 @@ def import_dungeons(connection, metadata, sourcePath, language='en'):
             dungeonID   = dungeon_id,
             dungeonName = _en(r.get('name', {}), language),
             description = _en(r.get('description', {}), language),
+            gameplayDescription = _en(r.get('gameplayDescription') or {}, language),
             archetypeID = r.get('archetypeID'),
             factionID   = r.get('factionID'),
         ))

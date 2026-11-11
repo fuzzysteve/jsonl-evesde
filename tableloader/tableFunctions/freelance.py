@@ -51,6 +51,7 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
     for outer in _jsonl(sourcePath, 'freelanceJobSchemas.jsonl'):
         for j in outer.get('schemas', []):
             job_id = j['name']
+            mult = j.get('contributionMultiplier') or {}
             connection.execute(insert(tblSchemas).values(
                 jobSchemaID         = job_id,
                 title               = _en(j.get('title', {}), language),
@@ -59,6 +60,9 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
                 rewardDescription   = _en(j.get('rewardDescription', {}), language),
                 targetDescription   = _en(j.get('targetDescription', {}), language),
                 iconID              = j.get('iconID'),
+                contributionMultiplierDefault = mult.get('defaultValue'),
+                contributionMultiplierMin     = mult.get('minValue'),
+                contributionMultiplierMax     = mult.get('maxValue'),
             ))
             schemas += 1
 
@@ -70,12 +74,21 @@ def import_freelance_job_schemas(connection, metadata, sourcePath, language='en'
                 tags += 1
 
             for p in j.get('parameters', []):
-                matcher = p.get('matcher') or {}
+                # Each parameter has exactly one kind: matcher, boolean or itemDelivery.
+                # For itemDelivery, the accepted types/limit are its deliveryLocation's.
+                kind = next((k for k in ('matcher', 'boolean', 'itemDelivery') if k in p), None)
+                body = (p.get(kind) or {}) if kind else {}
+                matcher = (body.get('deliveryLocation') or {}) if kind == 'itemDelivery' else body
                 accepted = matcher.get('acceptedValueTypes')
                 connection.execute(insert(tblParams).values(
                     jobSchemaID        = job_id,
                     paramKey           = p['key'],
                     acceptedValueTypes = json.dumps(accepted) if accepted is not None else None,
+                    parameterKind      = kind,
+                    valueType          = matcher.get('type') if kind == 'matcher' else None,
+                    maxEntries         = matcher.get('maxEntries'),
+                    isOptional         = matcher.get('optional') if kind == 'matcher' else None,
+                    booleanDefault     = body.get('default') if kind == 'boolean' else None,
                 ))
                 params += 1
 

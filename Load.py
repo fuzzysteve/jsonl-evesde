@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Table, delete, inspect
+from sqlalchemy import create_engine, Table, delete, inspect, Integer, BigInteger
 import warnings
 import configparser, os
 import sys
@@ -859,15 +859,21 @@ def _resolve_tables(table_names):
 
 
 def _schema_out_of_date(loader):
-    """True if any of the loader's tables is missing from the DB, or lacks a
-    column defined in tables.py — i.e. the schema changed since the DB was built."""
+    """True if any of the loader's tables is missing from the DB, lacks a
+    column defined in tables.py, or has an integer column of the wrong width
+    (INTEGER vs BIGINT) — i.e. the schema changed since the DB was built."""
     inspector = inspect(engine)
     for tbl in _resolve_tables(loader['tables']):
         if not inspector.has_table(tbl.name, schema=tbl.schema):
             return True
-        existing = {c['name'] for c in inspector.get_columns(tbl.name, schema=tbl.schema)}
-        if any(c.name not in existing for c in tbl.columns):
-            return True
+        existing = {c['name']: c['type'] for c in inspector.get_columns(tbl.name, schema=tbl.schema)}
+        for c in tbl.columns:
+            if c.name not in existing:
+                return True
+            db_type = existing[c.name]
+            if (isinstance(c.type, Integer) and isinstance(db_type, Integer)
+                    and isinstance(c.type, BigInteger) != isinstance(db_type, BigInteger)):
+                return True
     return False
 
 
@@ -896,7 +902,7 @@ def _run_update():
         if not triggered and loader.get('depends_on_modules'):
             triggered = bool(ran_modules & set(loader['depends_on_modules']))
         if not triggered and _schema_out_of_date(loader):
-            print(f"Update: module '{loader['module_name']}' has missing tables/columns")
+            print(f"Update: module '{loader['module_name']}' schema is out of date (missing table/column or integer width)")
             triggered = True
         if not triggered:
             continue

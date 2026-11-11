@@ -162,6 +162,8 @@ def metadataCreator(schema):
             Column('stationSystemCount', INTEGER()),
             Column('militiaCorporationID', INTEGER()),
             Column('iconID', INTEGER()),
+            Column('flatLogo', VARCHAR(length=100)),
+            Column('flatLogoWithName', VARCHAR(length=100)),
             schema=schema
 
 
@@ -278,6 +280,11 @@ def metadataCreator(schema):
             Column('mainActivityID', INTEGER()),
             Column('secondaryActivityID', INTEGER()),
             Column('taxRate', FLOAT(precision=53)),
+            Column('deleted', Boolean(name='cnpcc_del')),
+            Column('memberLimit', INTEGER()),
+            Column('minimumJoinStanding', INTEGER()),
+            Column('hasPlayerPersonnelManager', Boolean(name='cnpcc_ppm')),
+            Column('sendCharTerminationMessage', Boolean(name='cnpcc_term')),
             schema=schema
 
 
@@ -427,6 +434,14 @@ def metadataCreator(schema):
             Column('description',    VARCHAR(length=256), nullable=True),
             Column('sofFactionName', VARCHAR(length=100), nullable=True),
             Column('sofRaceHint',    VARCHAR(length=100), nullable=True),
+            Column('sofPatternName', VARCHAR(length=100), nullable=True),
+            Column('resPathInsert',  VARCHAR(length=100), nullable=True),
+            Column('material1',      VARCHAR(length=100), nullable=True),
+            Column('material2',      VARCHAR(length=100), nullable=True),
+            Column('material3',      VARCHAR(length=100), nullable=True),
+            Column('material4',      VARCHAR(length=100), nullable=True),
+            Column('custommaterial1', VARCHAR(length=100), nullable=True),
+            Column('custommaterial2', VARCHAR(length=100), nullable=True),
             Column('colorHullR',     FLOAT(precision=53), nullable=True),
             Column('colorHullG',     FLOAT(precision=53), nullable=True),
             Column('colorHullB',     FLOAT(precision=53), nullable=True),
@@ -655,6 +670,7 @@ def metadataCreator(schema):
             Column('metaGroupName', VARCHAR(length=100)),
             Column('description', VARCHAR(length=1000)),
             Column('iconID', INTEGER()),
+            Column('iconSuffix', VARCHAR(length=50)),
             schema=schema
 
 
@@ -1128,6 +1144,7 @@ def metadataCreator(schema):
             Column('licenseTypeID', INTEGER(), primary_key=True, autoincrement=False, nullable=False),
             Column('duration', INTEGER()),
             Column('skinID', INTEGER()),
+            Column('isSingleUse', Boolean(name='skinlic_single')),
             schema=schema
 
 
@@ -1160,6 +1177,7 @@ def metadataCreator(schema):
             Column('visibleTranquility', Boolean(name='skin_vis_tq')),
             Column('visibleSerenity', Boolean(name='skin_vis_sr')),
             Column('isStructureSkin', Boolean(name='skin_struct')),
+            Column('allowCCPDevs', Boolean(name='skin_ccpdev')),
             schema=schema
 
 
@@ -1429,6 +1447,7 @@ def metadataCreator(schema):
         Column('initialAgentGiftQty',     INTEGER(), nullable=True),
         Column('killDungeonID',           INTEGER(), nullable=True),
         Column('killObjectiveQty',        INTEGER(), nullable=True),
+        Column('killDropContainerTypeID', INTEGER(), nullable=True),
         Column('courierObjectiveTypeID',  INTEGER(), nullable=True),
         Column('courierObjectiveQty',     INTEGER(), nullable=True),
         Column('courierObjectiveSingleton', Boolean(), nullable=True),
@@ -1481,6 +1500,7 @@ def metadataCreator(schema):
         Column('dungeonID',   INTEGER(),          primary_key=True, autoincrement=False, nullable=False),
         Column('dungeonName', VARCHAR(length=255), nullable=True),
         Column('description', UnicodeText(),       nullable=True),
+        Column('gameplayDescription', UnicodeText(), nullable=True),
         Column('archetypeID', INTEGER(),           nullable=True),
         Column('factionID',   INTEGER(),           nullable=True),
         schema=schema
@@ -1562,6 +1582,9 @@ def metadataCreator(schema):
         Column('rewardDescription',  UnicodeText(),        nullable=True),
         Column('targetDescription',  UnicodeText(),        nullable=True),
         Column('iconID',             VARCHAR(length=100),  nullable=True),
+        Column('contributionMultiplierDefault', FLOAT(precision=53), nullable=True),
+        Column('contributionMultiplierMin',     FLOAT(precision=53), nullable=True),
+        Column('contributionMultiplierMax',     FLOAT(precision=53), nullable=True),
         schema=schema
     )
 
@@ -1575,6 +1598,11 @@ def metadataCreator(schema):
         Column('jobSchemaID',         VARCHAR(length=100), primary_key=True, nullable=False),
         Column('paramKey',            VARCHAR(length=100), primary_key=True, nullable=False),
         Column('acceptedValueTypes',  UnicodeText(),       nullable=True),
+        Column('parameterKind',       VARCHAR(length=20),  nullable=True),
+        Column('valueType',           VARCHAR(length=100), nullable=True),
+        Column('maxEntries',          INTEGER(),           nullable=True),
+        Column('isOptional',          Boolean(),           nullable=True),
+        Column('booleanDefault',      Boolean(),           nullable=True),
         schema=schema
     )
 
@@ -1693,8 +1721,8 @@ def metadataCreator(schema):
         Column('subtitle',                     UnicodeText(),       nullable=True),
         Column('careerPath',                   VARCHAR(length=100), nullable=True),
         Column('targetProgress',               BIGINT(),            nullable=True),
-        Column('maxProgressPerParticipant',    INTEGER(),           nullable=True),
-        Column('presentingCharacterID',        INTEGER(),           nullable=True),
+        Column('maxProgressPerParticipant',    BIGINT(),            nullable=True),
+        Column('presentingCharacterID',        BIGINT(),            nullable=True),
         Column('issuerCorporationID',          INTEGER(),           nullable=True),
         Column('contributionMethod',           VARCHAR(length=100), nullable=True),
         Column('contributionParameters',       JSON().with_variant(JSONB(), 'postgresql'), nullable=True),
@@ -1861,6 +1889,7 @@ def metadataCreator(schema):
         Column('iconID',            INTEGER(), nullable=True),
         Column('targetMode',        VARCHAR(length=50), nullable=True),
         Column('tooltipText',       UnicodeText(), nullable=True),
+        Column('turretGraphicID',   INTEGER(), nullable=True),
         schema=schema
     )
 
@@ -1884,6 +1913,7 @@ def metadataCreator(schema):
         Column('description',          UnicodeText(), nullable=True),
         Column('title',                VARCHAR(length=200), nullable=True),
         Column('characterDescription', UnicodeText(), nullable=True),
+        Column('isStarterSpaceSchool', Boolean(), nullable=True),
         schema=schema
     )
 
@@ -1913,6 +1943,7 @@ def metadataCreator(schema):
         Column('internalName',  VARCHAR(length=200), nullable=True),
         Column('name',          VARCHAR(length=200), nullable=True),
         Column('description',   UnicodeText(), nullable=True),
+        Column('npcCorporationDivisionID', INTEGER(), nullable=True),
         schema=schema
     )
 
@@ -1973,6 +2004,8 @@ def metadataCreator(schema):
         Column('triggerDelay',             INTEGER(), nullable=True),
         Column('triggerFilterTypeListID',  INTEGER(), nullable=True),
         Column('triggerRange',             FLOAT(precision=53), nullable=True),
+        Column('forceDecloakDuration',     INTEGER(), nullable=True),
+        Column('resetDelay',               INTEGER(), nullable=True),
         schema=schema
     )
 
@@ -2018,6 +2051,7 @@ def metadataCreator(schema):
     sysWideEffects = Table('sysWideEffects', metadata,
         Column('solarSystemID',      INTEGER(), primary_key=True, autoincrement=False, nullable=False),
         Column('eligibleTypeListID', INTEGER(), nullable=True),
+        Column('environmentTypeID',  INTEGER(), nullable=True),
         schema=schema
     )
 
