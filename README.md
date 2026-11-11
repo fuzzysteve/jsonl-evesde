@@ -88,8 +88,8 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 
 1. Checks the SDE REST API (`sde.evetech.net`) for a new build number
 2. Downloads every table's JSONL from that pinned release (`fetch_sde.py`)
-3. Commits the files to a local git repo inside the SDE directory
-4. Computes which JSONL files changed (via `git diff`) and exports `SDE_CHANGED_FILES`
+3. Commits the files to a local git repo inside the SDE directory (history only)
+4. Exports `SDE_CHANGED_FILES`: the tables whose API `version` changed since the previous fetch, from `fetch_sde.py`'s manifest
 5. Runs `Load.py` for each database target
 6. Exports compressed dumps and places them under `WEB_ROOT`
 7. Updates `latest-*` symlinks and generates md5sums
@@ -102,7 +102,7 @@ Run it manually:
 ./run-conversion.sh --reprocess # skips download; reloads from the last committed SDE
 ```
 
-`--reprocess` is useful after adding new loaders or fixing a bug — it re-runs the full load pipeline against the SDE files already on disk, using `git diff HEAD~1` to detect which JSONL files changed in the last commit (or a full load if there is no previous commit).
+`--reprocess` is useful after adding new loaders or fixing a bug — it re-runs the full load pipeline against the SDE files already on disk, using the changed tables recorded in the SDE manifest by the last fetch (or a full load if none are recorded).
 
 The script uses `flock` to prevent concurrent runs. It expects `run-conversion.cfg` to exist.
 
@@ -114,7 +114,7 @@ The script uses `flock` to prevent concurrent runs. It expects `run-conversion.c
 
 ## SDE source git repo
 
-`run-conversion.sh` maintains a git repository inside `SDE_DIR` (default `/opt/sde/files/`). Each SDE release becomes one commit, which enables `git diff` to identify changed files and trigger update-mode loads rather than full reloads.
+`run-conversion.sh` maintains a git repository inside `SDE_DIR` (default `/opt/sde/files/`). Each SDE release becomes one commit, giving a browsable history of the source files. Change detection doesn't use it: `fetch_sde.py` keeps a manifest, `.sde-versions.json`, of each table's API `version` (plus the SHA-256 of the local file), downloads only tables whose version changed, and records which tables changed for `SDE_CHANGED_FILES`. The first fetch has no previous manifest to compare with, so it is always a full load.
 
 Initialise it once before the first run:
 

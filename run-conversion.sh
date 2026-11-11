@@ -72,6 +72,20 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 PREVIEW_DIRTY_FILE="$SCRIPT_DIR/.preview_dirty"
 PREVIEW_SDE_DIR="${PREVIEW_SDE_DIR:-${SDE_DIR%/}-preview}"
 
+# Set SDE_CHANGED_FILES from the tables the last fetch into $SDE_DIR changed,
+# per its version manifest. Empty or unknown (first fetch, no manifest) means
+# a full load, signalled by leaving the variable unset.
+set_changed_files() {
+    SDE_CHANGED_FILES=$(python3 "$SCRIPT_DIR/fetch_sde.py" changed "$SDE_DIR")
+    if [ -n "$SDE_CHANGED_FILES" ]; then
+        export SDE_CHANGED_FILES
+        log "Changed JSONL files: $SDE_CHANGED_FILES"
+    else
+        unset SDE_CHANGED_FILES
+        log "No changed tables recorded in the SDE manifest — full load"
+    fi
+}
+
 if [ -n "$PREVIEW_URL" ]; then
     # ---------------------------------------------------------------------------
     # Preview mode: separate extract dir, no git commit, always a full load
@@ -95,23 +109,7 @@ elif [ "$REPROCESS" -eq 1 ]; then
     fi
     LATEST_BUILD=$(cat "$BUILD_FILE")
     log "Reprocessing build $LATEST_BUILD from existing SDE at $SDE_DIR"
-    cd "$SDE_DIR"
-    PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "")
-    if [ -n "$PREV_COMMIT" ]; then
-        SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
-                            | while IFS= read -r f; do basename "$f"; done)
-        if [ -n "$SDE_CHANGED_FILES" ]; then
-            export SDE_CHANGED_FILES
-            log "Changed JSONL files: $SDE_CHANGED_FILES"
-        else
-            unset SDE_CHANGED_FILES
-            log "No JSONL files changed in last commit — full load"
-        fi
-    else
-        unset SDE_CHANGED_FILES
-        log "No previous commit — full load"
-    fi
-    cd "$SCRIPT_DIR"
+    set_changed_files
 else
     # ---------------------------------------------------------------------------
     # Check for new SDE version
@@ -156,33 +154,18 @@ else
     log "SDE downloaded to $SDE_DIR"
 
     # ---------------------------------------------------------------------------
-    # Commit new SDE files to local git repo; detect what changed
+    # Commit new SDE files to the local git repo (history only)
     # ---------------------------------------------------------------------------
     cd "$SDE_DIR"
     git add -A
     if git diff --cached --quiet; then
         log "No new SDE file changes to commit"
-        PREV_COMMIT=""
     else
         git commit -m "$LATEST_BUILD"
-        PREV_COMMIT=$(git rev-parse HEAD~1 2>/dev/null || echo "")
-    fi
-
-    if [ -n "$PREV_COMMIT" ]; then
-        SDE_CHANGED_FILES=$(git diff --name-only "$PREV_COMMIT" HEAD -- '*.jsonl' \
-                            | while IFS= read -r f; do basename "$f"; done)
-        if [ -n "$SDE_CHANGED_FILES" ]; then
-            export SDE_CHANGED_FILES
-            log "Changed JSONL files: $SDE_CHANGED_FILES"
-        else
-            unset SDE_CHANGED_FILES
-            log "No JSONL files changed — full load"
-        fi
-    else
-        unset SDE_CHANGED_FILES
-        log "Full load (no previous commit to diff against)"
     fi
     cd "$SCRIPT_DIR"
+
+    set_changed_files
 fi
 
 if [ -z "$PREVIEW_URL" ] && [ -f "$PREVIEW_DIRTY_FILE" ]; then
