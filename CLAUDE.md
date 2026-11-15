@@ -18,7 +18,7 @@ The loader pipeline has two modes:
 
 ### JSONL helpers
 
-Every loader module has a local `_jsonl(sourcePath, filename)` generator that streams records. Each record is a dict. Source files come from the SDE REST API (`sde.evetech.net`, fetched by `fetch_sde.py`), where every key has a proper name: the primary key is always the **first field** of the record (`typeID`, `groupID`, `solarSystemID`, …), and nested key/value pairs are named too (e.g. dbuffs are `{dbuffID, value}`). Check `<table>.schema.json` from the API for the names; a few are irregular (`id`, `key`, `blueprintTypeKey`, `licenseTypeKey`, `dungeonKey`).
+Every loader module has a local `_jsonl(sourcePath, filename)` generator that streams records. Each record is a dict. Source files come from the SDE REST API (`sde.evetech.net`, fetched by `fetch_sde.py`), where every key has a proper name: the primary key is always the **first field** of the record (`typeID`, `groupID`, `solarSystemID`, …), and nested key/value pairs are named too (e.g. dbuffs are `{dbuffID, value}`). Check `<table>.schema.json` from the API for the names; a few are irregular (`id`, `key`). Build 3698585 dropped the old `blueprintTypeKey`, `licenseTypeKey` and `dungeonKey` in favour of `blueprintTypeID`, `licenseTypeID` and `dungeonID`; `_schemaChangelog.jsonl` describes such changes, but check the data too, since its wording for that one was backwards.
 
 ```python
 for r in _jsonl(sourcePath, 'types.jsonl'):

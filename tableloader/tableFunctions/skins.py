@@ -85,7 +85,7 @@ def import_skin_licenses(connection, metadata, sourcePath, language='en'):
     count = 0
     for r in _jsonl(sourcePath, 'skinLicenses.jsonl'):
         connection.execute(insert(tbl).values(
-            licenseTypeID = r['licenseTypeKey'],
+            licenseTypeID = r['licenseTypeID'],
             duration      = r.get('duration'),
             skinID        = r.get('skinID'),
             isSingleUse   = r.get('isSingleUse'),

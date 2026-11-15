@@ -202,10 +202,10 @@ def import_mercenary_tactical_operations(connection, metadata, sourcePath, langu
     count = 0
     for r in _jsonl(sourcePath, 'mercenaryTacticalOperations.jsonl'):
         connection.execute(insert(tbl).values(
-            operationID      = r['dungeonKey'],
+            operationID      = r['dungeonID'],
             name             = _en(r.get('name', {}), language),
             description      = _en(r.get('description', {}), language),
-            dungeonID        = r.get('dungeonID'),
+            dungeonID        = r['dungeonID'],
             anarchyImpact    = r.get('anarchyImpact'),
             developmentImpact = r.get('developmentImpact'),
             infomorphBonus   = r.get('infomorphBonus'),
