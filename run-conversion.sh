@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
-cd /home/scripts/jsonl-evesde
 
 # ---------------------------------------------------------------------------
 # Locate script and load config
 # ---------------------------------------------------------------------------
+# Resolve SCRIPT_DIR before any cd: BASH_SOURCE may be relative (./run-conversion.sh).
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 BUILD_FILE="$SCRIPT_DIR/.last_build"
 
 CONFIG_FILE="$SCRIPT_DIR/run-conversion.cfg"
@@ -62,6 +63,10 @@ fi
 source "$VENV_DIR/bin/activate"
 
 mkdir -p "$OUTPUT_DIR" "$SDE_DIR"
+
+# Load.py reads the JSONL from wherever fetch_sde.py put it, not sdeloader.cfg's
+# sourcePath (preview mode overrides this with its own extract dir).
+export SDE_SOURCE_PATH="${SDE_DIR%/}/"
 
 SDE_API_URL="${SDE_API_URL:-https://sde.evetech.net/tranquility/latest/}"
 
