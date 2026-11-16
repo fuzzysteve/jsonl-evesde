@@ -126,9 +126,26 @@ WEB_ROOT_URL=https://example.invalid/dump
         p = self.app / '.last_build'
         return p.read_text().strip() if p.exists() else None
 
+    def published_dir(self):
+        """The build directory the most recent publish wrote (where `latest` points)."""
+        from pathlib import Path
+        return Path(os.readlink(self.web / 'latest'))
+
+    def diff_files(self):
+        d = self.published_dir()
+        txt = d / 'sde-changes.txt'
+        gz = d / 'sde-changes.diff.gz'
+        import gzip
+        return (txt.read_text() if txt.exists() else None,
+                gzip.decompress(gz.read_bytes()).decode() if gz.exists() else None)
+
     def git_log(self):
         return subprocess.run(['git', '-C', str(self.files), 'log', '--format=%s'],
                               capture_output=True, text=True).stdout.split('\n')[:-1]
+
+
+def fields(payload):
+    return {f['name']: f['value'] for f in payload['embeds'][0]['fields']}
 
 
 def loads(calls):
@@ -175,7 +192,8 @@ def test_first_run_is_a_full_load_and_publishes(box):
     [payload] = discord
     embed = payload['embeds'][0]
     assert embed['title'] == 'SDE build 1000 published'
-    assert embed['fields'][-1] == {'name': 'Changed files', 'value': 'Build changes summary'}
+    assert fields(payload)['Changed files'] == 'Build changes summary'
+    assert 'File diff' not in fields(payload)                       # no base yet
     assert box.git_log() == [f'1000 ({box.api.current})']
 
 
@@ -191,7 +209,7 @@ def test_rerelease_with_data_change_is_an_update_and_announced_as_such(published
     assert loads(calls) == {t: ['_changes.jsonl', '_sde.jsonl', 'types.jsonl'] for t in TARGETS}
     assert called(calls, 'sde_changes.py') == []
     [payload] = discord
-    assert payload['embeds'][0]['fields'][-1]['value'] == \
+    assert fields(payload)['Changed files'] == \
         f'Re-release {release} of build 1000\nChanged tables: types'
     assert published.manifest()['processed'] is True
     assert published.git_log()[0] == f'1000 ({release})'
@@ -299,3 +317,88 @@ def test_api_unreachable_fails_cleanly(published):
     assert r.returncode == 1
     assert 'Could not check the SDE release index' in r.stdout
     assert calls == [] and discord == []
+
+
+# ---- published file diff -----------------------------------------------------
+
+def test_first_run_has_no_file_diff_but_records_a_base(box):
+    r, _, _ = box.run()
+    assert 'No previously published SDE commit recorded' in r.stdout
+    assert box.diff_files() == (None, None)
+    head = subprocess.run(['git', '-C', str(box.files), 'rev-parse', 'HEAD'],
+                          capture_output=True, text=True).stdout.strip()
+    assert (box.app / '.last_sde_commit').read_text().strip() == head
+
+
+def test_file_diff_shows_the_changed_records(published):
+    old_release = published.api.current
+    release = published.api.publish(set={**sde_tables(1000),
+                                         'types': jsonl({'typeID': 34, 'name': {'en': 'Tritanium'}},
+                                                        {'typeID': 36, 'name': {'en': 'Mexallon'}}),
+                                         'skins': jsonl({'skinID': 1})},
+                                     remove=['groups'])
+    published.run()
+    txt, diff = published.diff_files()
+    assert f'From: 1000 ({old_release})' in txt and f'To:   1000 ({release})' in txt
+    for f in ('types.jsonl', 'skins.jsonl (new)', 'groups.jsonl (gone)'):
+        assert f in txt
+    assert 'mapMoons.jsonl' not in txt and '.sde-versions.json' not in diff
+    assert '-{"typeID": 35, "name": {"en": "Pyerite"}}' in diff
+    assert '+{"typeID": 36, "name": {"en": "Mexallon"}}' in diff
+    assert ' {"typeID": 34, "name": {"en": "Tritanium"}}' in diff      # context line
+
+
+def test_file_diff_spans_skipped_and_failed_releases(published):
+    base = published.api.current
+    published.api.publish(set={**sde_tables(1000), 'groups': jsonl({'groupID': 19})})
+    published.fail_flag.touch()
+    published.run(ok=False)                                            # failed: not published
+    published.fail_flag.unlink()
+    published.run()
+    txt, diff = published.diff_files()
+    assert f'From: 1000 ({base})' in txt and '+{"groupID": 19}' in diff
+
+    base = published.api.current
+    published.api.publish(set=sde_tables(1000, date='z'), bump=['types'])
+    published.run()                                                    # bookkeeping only: skipped
+    release = published.api.publish(set={**sde_tables(1000, date='w'), 'mapMoons': jsonl({'moonID': 1})})
+    published.run()
+    txt, diff = published.diff_files()
+    assert f'From: 1000 ({base})' in txt and f'To:   1000 ({release})' in txt
+    assert 'mapMoons.jsonl' in txt and '_sde.jsonl' in txt
+
+
+def test_force_with_nothing_new_says_no_changes(published):
+    published.run('--force')
+    txt, diff = published.diff_files()
+    assert 'No source file changes.' in txt and diff is None
+
+
+def test_missing_base_commit_skips_the_diff(published):
+    (published.app / '.last_sde_commit').write_text('0' * 40 + '\n')
+    published.api.publish(set={**sde_tables(1000), 'groups': jsonl({'groupID': 19})})
+    r, _, _ = published.run()
+    assert 'not in' in r.stdout and published.diff_files() == (None, None)
+
+
+def test_discord_links_this_builds_file_diff(published):
+    published.api.publish(set={**sde_tables(1000), 'groups': jsonl({'groupID': 19})})
+    _, _, [payload] = published.run()
+    build_dir = published.published_dir().name
+    base = f'https://example.invalid/dump/{build_dir}'
+    assert fields(payload)['File diff'] == \
+        f'[sde-changes.txt]({base}/sde-changes.txt) · [sde-changes.diff.gz]({base}/sde-changes.diff.gz)'
+
+
+def test_discord_diff_link_without_gz_when_nothing_changed(published):
+    _, _, [payload] = published.run('--force')
+    build_dir = published.published_dir().name
+    assert fields(payload)['File diff'] == \
+        f'[sde-changes.txt](https://example.invalid/dump/{build_dir}/sde-changes.txt)'
+
+
+def test_discord_comment_still_comes_after_the_diff_link(published):
+    published.api.publish(set={**sde_tables(1000), 'groups': jsonl({'groupID': 19})})
+    _, _, [payload] = published.run('--comment', 'hello')
+    names = [f['name'] for f in payload['embeds'][0]['fields']]
+    assert names[-2:] == ['File diff', 'Note'] and fields(payload)['Note'] == 'hello'

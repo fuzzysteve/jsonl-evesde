@@ -211,3 +211,4 @@ eve.db
 .last_build
 .run-conversion.lock
 .preview_dirty
+.last_sde_commit

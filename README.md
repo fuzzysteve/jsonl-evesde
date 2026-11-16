@@ -92,6 +92,7 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 4. Exports `SDE_CHANGED_FILES`: the tables whose content changed since the last processed release, from `fetch_sde.py`'s manifest. A re-release of the same build that changes no loaded data is marked done here without being published.
 5. Runs `Load.py` for each database target
 6. Exports compressed dumps and places them under `WEB_ROOT`
+   - plus `sde-changes.txt` (per-file summary) and `sde-changes.diff.gz` (unified diff of the source JSONL) against the last *published* release, so changes from releases that were skipped or failed are included. The Discord post links both. The first run has no base yet (`.last_sde_commit`), so it has no diff.
 7. Updates `latest-*` symlinks and generates md5sums
 
 Run it manually:

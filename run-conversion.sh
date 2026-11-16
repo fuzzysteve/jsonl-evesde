@@ -75,6 +75,49 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 # Set when a preview run has loaded non-TQ data into the staging DBs; the next
 # normal run must do a full load rather than an incremental update on top of it.
 PREVIEW_DIRTY_FILE="$SCRIPT_DIR/.preview_dirty"
+
+# The SDE_DIR git commit of the last published build: the base for the
+# published file diff, so changes from skipped or failed releases roll into
+# the next one.
+SDE_COMMIT_FILE="$SCRIPT_DIR/.last_sde_commit"
+
+# Write sde-changes.txt (summary) and sde-changes.diff.gz (unified diff of the
+# JSONL files) into $1, comparing SDE_DIR's HEAD with the last published commit.
+# Skipped when there's no recorded base yet (first run, or first run after the
+# switch from the zip, whose diff would be every line of every file).
+write_sde_diff() {
+    local dest="$1" head prev
+    if ! head=$(git -C "$SDE_DIR" rev-parse -q --verify HEAD); then
+        log "No SDE git history; skipping file diff"
+        return 0
+    fi
+    if [ ! -f "$SDE_COMMIT_FILE" ]; then
+        log "No previously published SDE commit recorded; skipping file diff"
+        return 0
+    fi
+    prev=$(cat "$SDE_COMMIT_FILE")
+    if ! git -C "$SDE_DIR" cat-file -e "${prev}^{commit}" 2>/dev/null; then
+        log "Last published SDE commit $prev not in $SDE_DIR history; skipping file diff"
+        return 0
+    fi
+    {
+        echo "SDE source file changes"
+        echo "From: $(git -C "$SDE_DIR" log -1 --format='%s' "$prev")"
+        echo "To:   $(git -C "$SDE_DIR" log -1 --format='%s' "$head")"
+        echo
+        if git -C "$SDE_DIR" diff --quiet "$prev" "$head" -- '*.jsonl'; then
+            echo "No source file changes."
+        else
+            git -C "$SDE_DIR" diff --compact-summary --stat=200 --stat-graph-width=40 "$prev" "$head" -- '*.jsonl'
+            echo
+            echo "Full diff: sde-changes.diff.gz"
+        fi
+    } > "$dest/sde-changes.txt"
+    if ! git -C "$SDE_DIR" diff --quiet "$prev" "$head" -- '*.jsonl'; then
+        git -C "$SDE_DIR" diff "$prev" "$head" -- '*.jsonl' | gzip > "$dest/sde-changes.diff.gz"
+    fi
+    log "File diff -> $dest/sde-changes.txt"
+}
 PREVIEW_SDE_DIR="${PREVIEW_SDE_DIR:-${SDE_DIR%/}-preview}"
 
 # Set SDE_CHANGED_FILES from the tables the last fetch into $SDE_DIR changed,
@@ -361,6 +404,7 @@ ls -lh "$OUTPUT_DIR"/*_${LATEST_BUILD}_${TIMESTAMP}*
 
 mkdir -p "$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}/"
 mv "$OUTPUT_DIR"/*_${LATEST_BUILD}_${TIMESTAMP}* "$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}/"
+write_sde_diff "$WEB_ROOT/${LATEST_BUILD}_${TIMESTAMP}"
 
 rm -f "$WEB_ROOT/latest-mysql.sql.gz"
 rm -f "$WEB_ROOT/latest-mssql.bak"
@@ -401,6 +445,7 @@ mysqldump sdeyaml|mysql eve
 # set -e aborts here, leaving BUILD_FILE unchanged so the next run retries.
 echo "$LATEST_BUILD" > "$BUILD_FILE"
 python3 "$SCRIPT_DIR/fetch_sde.py" done "$SDE_DIR"
+git -C "$SDE_DIR" rev-parse -q --verify HEAD > "$SDE_COMMIT_FILE" || rm -f "$SDE_COMMIT_FILE"
 rm -f "$PREVIEW_DIRTY_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
 
@@ -426,6 +471,20 @@ if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     fi
     PAYLOAD=$(LATEST_BUILD="$LATEST_BUILD" WEB_ROOT_URL="$WEB_ROOT_URL" GIT_STATS="$GIT_STATS" \
               envsubst '$LATEST_BUILD $WEB_ROOT_URL $GIT_STATS' < "$SCRIPT_DIR/discord-notification.json")
+    # Link this build's file diff (its own directory, not latest/, so the link
+    # stays right after later builds), when there is one.
+    _BUILD_DIR="${LATEST_BUILD}_${TIMESTAMP}"
+    if [ -f "$WEB_ROOT/$_BUILD_DIR/sde-changes.txt" ]; then
+        _DIFF_LINKS="[sde-changes.txt]($WEB_ROOT_URL/$_BUILD_DIR/sde-changes.txt)"
+        [ -f "$WEB_ROOT/$_BUILD_DIR/sde-changes.diff.gz" ] && \
+            _DIFF_LINKS="$_DIFF_LINKS · [sde-changes.diff.gz]($WEB_ROOT_URL/$_BUILD_DIR/sde-changes.diff.gz)"
+        PAYLOAD=$(python3 -c "
+import json, sys
+p = json.loads(sys.stdin.read())
+p['embeds'][0]['fields'].append({'name': 'File diff', 'value': sys.argv[1]})
+print(json.dumps(p))
+" "$_DIFF_LINKS" <<< "$PAYLOAD")
+    fi
     if [ -n "${DISCORD_COMMENT:-}" ]; then
         PAYLOAD=$(python3 -c "
 import json, sys
