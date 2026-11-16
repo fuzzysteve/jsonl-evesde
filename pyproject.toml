@@ -18,3 +18,11 @@ dependencies = [
 [tool.uv]
 # Scripts, not an installable package: don't build/install the project itself.
 package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

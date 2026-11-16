@@ -86,10 +86,10 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 
 `run-conversion.sh` orchestrates the full end-to-end process:
 
-1. Checks the SDE REST API (`sde.evetech.net`) for a new build number
-2. Downloads every table's JSONL from that pinned release (`fetch_sde.py`)
+1. Checks the SDE REST API (`sde.evetech.net`) for a new release: any table whose API `version` differs from the last fetch. CCP can publish several releases under one build number, so the build number alone isn't the trigger. A release that was fetched but never finished processing is retried.
+2. Downloads the new or changed tables' JSONL from that pinned release (`fetch_sde.py`)
 3. Commits the files to a local git repo inside the SDE directory (history only)
-4. Exports `SDE_CHANGED_FILES`: the tables whose API `version` changed since the previous fetch, from `fetch_sde.py`'s manifest
+4. Exports `SDE_CHANGED_FILES`: the tables whose content changed since the last processed release, from `fetch_sde.py`'s manifest. A re-release of the same build that changes no loaded data is marked done here without being published.
 5. Runs `Load.py` for each database target
 6. Exports compressed dumps and places them under `WEB_ROOT`
 7. Updates `latest-*` symlinks and generates md5sums
@@ -97,7 +97,7 @@ This variable is set automatically by `run-conversion.sh`; you rarely need to se
 Run it manually:
 
 ```bash
-./run-conversion.sh             # skips if already on latest build
+./run-conversion.sh             # skips if no table version has changed
 ./run-conversion.sh --force     # runs even if build number hasn't changed
 ./run-conversion.sh --reprocess # skips download; reloads from the last committed SDE
 ```
@@ -112,9 +112,18 @@ The script uses `flock` to prevent concurrent runs. It expects `run-conversion.c
 0 */4 * * * /home/scripts/jsonl-evesde/run-conversion.sh >> /var/log/sde-conversion.log 2>&1
 ```
 
+## Tests
+
+```bash
+uv sync --frozen          # includes the dev group (pytest)
+.venv/bin/python -m pytest
+```
+
+`tests/test_fetch_sde.py` runs `fetch_sde.py` against a local fake of the SDE API (`tests/fakesde.py`). `tests/test_run_conversion.py` runs the real `run-conversion.sh` from a temp copy with a generated config, the fake API, and stubs for everything with side effects (`Load.py`, the helper scripts, `mysql`/`mysqldump`/`pg_dump`/`docker`/`curl`), checking which loads, publishes and Discord posts each release scenario produces. No database, web root or webhook is touched.
+
 ## SDE source git repo
 
-`run-conversion.sh` maintains a git repository inside `SDE_DIR` (default `/opt/sde/files/`). Each SDE release becomes one commit, giving a browsable history of the source files. Change detection doesn't use it: `fetch_sde.py` keeps a manifest, `.sde-versions.json`, of each table's API `version` (plus the SHA-256 of the local file), downloads only tables whose version changed, and records which tables changed for `SDE_CHANGED_FILES`. The first fetch has no previous manifest to compare with, so it is always a full load.
+`run-conversion.sh` maintains a git repository inside `SDE_DIR` (default `/opt/sde/files/`). Each SDE release becomes one commit, giving a browsable history of the source files. Change detection doesn't use it: `fetch_sde.py` keeps a manifest, `.sde-versions.json`, of each table's API `version` (plus the SHA-256 of the local file), downloads only tables whose version changed, and records which tables' content changed (by SHA-256; a version bump with identical bytes doesn't count) for `SDE_CHANGED_FILES`. A release is marked done in the manifest only after a successful run; until then its changed set carries over into the next fetch. The first fetch has no previous manifest to compare with, so it is always a full load.
 
 Initialise it once before the first run:
 

@@ -117,46 +117,42 @@ elif [ "$REPROCESS" -eq 1 ]; then
     set_changed_files
 else
     # ---------------------------------------------------------------------------
-    # Check for new SDE version
+    # Check for a new SDE release
     # ---------------------------------------------------------------------------
-    log "Checking latest SDE build number..."
-    LATEST_BUILD=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" build || true)
-
-    if [ -z "$LATEST_BUILD" ]; then
-        log "ERROR: Could not determine latest build number"
+    # CCP can publish several releases under one build number, so this compares
+    # every table's API version with the manifest in $SDE_DIR rather than the
+    # build. It also reports work to do when the last fetched release was never
+    # marked done (the previous run failed).
+    log "Checking for SDE table version changes..."
+    if ! PENDING=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" check "$SDE_DIR"); then
+        log "ERROR: Could not check the SDE release index"
         exit 1
     fi
-
-    log "Latest build: $LATEST_BUILD"
 
     LAST_BUILD=""
     if [ -f "$BUILD_FILE" ]; then
         LAST_BUILD=$(cat "$BUILD_FILE")
     fi
 
-    if [ "$LATEST_BUILD" = "$LAST_BUILD" ] && [ "$FORCE" -eq 0 ]; then
-        log "Already on build $LATEST_BUILD — nothing to do. Use --force to run anyway."
+    if [ -z "$PENDING" ] && [ "$FORCE" -eq 0 ]; then
+        log "No SDE table version changes (build ${LAST_BUILD:-unknown}) — nothing to do. Use --force to run anyway."
         exit 0
     fi
-
-    if [ "$FORCE" -eq 1 ] && [ "$LATEST_BUILD" = "$LAST_BUILD" ]; then
-        log "Build $LATEST_BUILD already processed but --force specified, continuing."
+    if [ -z "$PENDING" ]; then
+        log "No SDE table version changes but --force specified, continuing."
     else
-        log "New build available: $LATEST_BUILD (was: ${LAST_BUILD:-none})"
+        log "New SDE release: build ${PENDING% *}, release ${PENDING#* } (last processed build: ${LAST_BUILD:-none})"
     fi
 
     # ---------------------------------------------------------------------------
-    # Download and extract new SDE
+    # Download new or changed tables
     # ---------------------------------------------------------------------------
-    log "Downloading SDE build $LATEST_BUILD from $SDE_API_URL..."
+    log "Downloading SDE from $SDE_API_URL..."
     # fetch_sde.py downloads every table from one pinned release and prints its
     # build number; a release published since the check above wins.
-    FETCHED_BUILD=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" fetch "$SDE_DIR")
-    if [ "$FETCHED_BUILD" != "$LATEST_BUILD" ]; then
-        log "Build changed during check: fetched $FETCHED_BUILD (checked $LATEST_BUILD)"
-        LATEST_BUILD="$FETCHED_BUILD"
-    fi
-    log "SDE downloaded to $SDE_DIR"
+    LATEST_BUILD=$(SDE_API_URL="$SDE_API_URL" python3 "$SCRIPT_DIR/fetch_sde.py" fetch "$SDE_DIR")
+    LATEST_RELEASE=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["release"])' "$SDE_DIR/.sde-versions.json")
+    log "SDE build $LATEST_BUILD (release $LATEST_RELEASE) downloaded to $SDE_DIR"
 
     # ---------------------------------------------------------------------------
     # Commit new SDE files to the local git repo (history only)
@@ -166,11 +162,24 @@ else
     if git diff --cached --quiet; then
         log "No new SDE file changes to commit"
     else
-        git commit -m "$LATEST_BUILD"
+        git commit -m "$LATEST_BUILD ($LATEST_RELEASE)"
     fi
     cd "$SCRIPT_DIR"
 
     set_changed_files
+
+    # A re-release of the same build whose only content changes are the release
+    # bookkeeping files has nothing to publish: mark it done and stop. (_sde
+    # changes every release for its releaseDate; _changes and _schemaChangelog
+    # aren't loaded.) A new build number is always published, and so is a
+    # --force run.
+    if [ -n "${SDE_CHANGED_FILES+x}" ] && [ "$LATEST_BUILD" = "$LAST_BUILD" ] && [ "$FORCE" -eq 0 ] \
+       && [ ! -f "$PREVIEW_DIRTY_FILE" ] \
+       && ! grep -qvxE '_sde\.jsonl|_changes\.jsonl|_schemaChangelog\.jsonl' <<< "$SDE_CHANGED_FILES"; then
+        log "Release $LATEST_RELEASE changes no loaded data — marking done without publishing."
+        python3 "$SCRIPT_DIR/fetch_sde.py" done "$SDE_DIR"
+        exit 0
+    fi
 fi
 
 if [ -z "$PREVIEW_URL" ] && [ -f "$PREVIEW_DIRTY_FILE" ]; then
@@ -391,6 +400,7 @@ mysqldump sdeyaml|mysql eve
 # Record success only after all work completes; any earlier failure under
 # set -e aborts here, leaving BUILD_FILE unchanged so the next run retries.
 echo "$LATEST_BUILD" > "$BUILD_FILE"
+python3 "$SCRIPT_DIR/fetch_sde.py" done "$SDE_DIR"
 rm -f "$PREVIEW_DIRTY_FILE"
 log "=== All done (build $LATEST_BUILD) ==="
 
@@ -403,7 +413,13 @@ if [ -n "${DISCORD_WEBHOOK_URL:-}" ]; then
     # reports just this build's own changes rather than walking 20 builds back.
     _SDE_LAST="${LAST_BUILD:-}"
     [ "$_SDE_LAST" = "$LATEST_BUILD" ] && _SDE_LAST=""
-    if GIT_STATS=$(python3 "$SCRIPT_DIR/sde_changes.py" "$LATEST_BUILD" "$_SDE_LAST" 2>/dev/null); then
+    if [ "$LATEST_BUILD" = "${LAST_BUILD:-}" ] && [ -n "${LATEST_RELEASE:-}" ] && [ -n "${SDE_CHANGED_FILES:-}" ]; then
+        # A re-release of an already-published build: the build's change summary
+        # was announced last time, so list the tables this release changed instead.
+        # (\n stays literal: GIT_STATS is substituted into JSON.)
+        _TABLES=$(sed 's/\.jsonl$//' <<< "$SDE_CHANGED_FILES" | grep -vxE '_sde|_changes|_schemaChangelog' | paste -sd, | sed 's/,/, /g')
+        GIT_STATS="Re-release $LATEST_RELEASE of build $LATEST_BUILD\nChanged tables: ${_TABLES:0:900}"
+    elif GIT_STATS=$(python3 "$SCRIPT_DIR/sde_changes.py" "$LATEST_BUILD" "$_SDE_LAST" 2>/dev/null); then
         : # fetched successfully
     else
         GIT_STATS="Build $LATEST_BUILD"

@@ -7,8 +7,10 @@ mixed set of files.
 
 usage:
     fetch_sde.py build                 print the latest build number
+    fetch_sde.py check <dest_dir>      print "<build> <release>" if there is work to do
     fetch_sde.py fetch <dest_dir>      download all tables into dest_dir
     fetch_sde.py changed <dest_dir>    print the JSONL files the last fetch changed
+    fetch_sde.py done <dest_dir>       mark the fetched release as processed
 
 `fetch` keeps a manifest, dest_dir/.sde-versions.json, recording each table's
 API `version` and the SHA-256 of the file written. A table is downloaded only
@@ -20,10 +22,21 @@ as JSON before files are swapped in. Tables no longer in the release are
 removed. Other contents of dest_dir (e.g. its .git) are left alone. Prints the
 build number on success.
 
-The manifest also records `changed`: the tables whose version differs from the
-previous manifest, including tables added or removed. It is null when there was
-no previous manifest to compare with. `changed` prints those as <table>.jsonl,
-one per line, for SDE_CHANGED_FILES; it prints nothing when the set is empty or
+CCP can publish several releases under one build number, so `check` compares
+table versions, not the build: it prints the latest build and release when any
+table's version differs from the manifest (or a table was added or removed, or
+the build number changed),
+when there is no manifest, or when the fetched release hasn't been marked
+`done`, so a failed run is retried. It prints nothing when up to date.
+
+The manifest also records `changed`: the tables whose content differs from the
+previous fetch (by SHA-256, so a version bump with byte-identical content
+doesn't count), including tables added or removed. If the previous fetch was
+never marked `done`, its `changed` is carried over, so a run that failed and
+was overtaken by a newer release still reloads everything either release
+touched. It is null when there was no previous manifest to compare with (or
+the carried-over set was null). `changed` prints those as <table>.jsonl, one
+per line, for SDE_CHANGED_FILES; it prints nothing when the set is empty or
 unknown, which the pipeline treats as a full load.
 """
 import gzip
@@ -99,26 +112,63 @@ def _load_manifest(dest_dir):
         return None
 
 
-def _write_manifest(dest_dir, index, tables, changed):
+def _write_manifest(dest_dir, index, tables, changed, processed=False):
     path = os.path.join(dest_dir, MANIFEST)
     tmp = path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as fh:
         json.dump({'release': index['release'], 'buildNumber': index['buildNumber'],
-                   'changed': changed,
+                   'changed': changed, 'processed': processed,
                    'tables': dict(sorted(tables.items()))}, fh, indent=1)
         fh.write('\n')
     os.replace(tmp, path)
 
 
 def _changed_tables(old, tables):
-    """Tables whose version differs from the previous manifest, plus added and
-    removed ones; None if there was no previous manifest."""
+    """Tables whose content (SHA-256) differs from the previous manifest, plus
+    added and removed ones, unioned with the previous `changed` if that fetch
+    was never marked done; None if there was no previous manifest."""
     if old is None:
         return None
     prev = old['tables']
-    changed = {n for n, t in tables.items() if (prev.get(n) or {}).get('version') != t['version']}
+    changed = {n for n, t in tables.items() if (prev.get(n) or {}).get('sha256') != t['sha256']}
     changed |= {n for n in prev if n not in tables}
+    if not old.get('processed'):
+        if old.get('changed') is None:
+            return None
+        changed |= set(old['changed'])
     return sorted(changed)
+
+
+def _versions(tables):
+    return {n: t['version'] for n, t in tables.items()}
+
+
+def check(dest_dir):
+    """(build, release) if there is work to do, else None."""
+    index = release_index()
+    tables = {name: t for name, t in index['tables'].items() if t.get('jsonl')}
+    manifest = _load_manifest(dest_dir)
+    if manifest is None:
+        _log("No manifest: full fetch needed")
+    elif not manifest.get('processed'):
+        _log(f"Release {manifest.get('release')} was fetched but not marked done")
+    elif manifest.get('buildNumber') != index['buildNumber']:
+        _log(f"New build {index['buildNumber']} (was {manifest.get('buildNumber')})")
+    elif _versions(manifest['tables']) != _versions(tables):
+        old = _versions(manifest['tables'])
+        diff = sorted(n for n in old.keys() | tables.keys() if old.get(n) != (tables.get(n) or {}).get('version'))
+        _log(f"Release {index['release']}: {len(diff)} table version(s) changed: {', '.join(diff)}")
+    else:
+        return None
+    return index['buildNumber'], index['release']
+
+
+def mark_done(dest_dir):
+    manifest = _load_manifest(dest_dir)
+    if manifest is None:
+        _log(f"No manifest in {dest_dir}: nothing to mark done")
+        return
+    _write_manifest(dest_dir, manifest, manifest['tables'], manifest['changed'], processed=True)
 
 
 def _unchanged(dest_dir, name, version, old):
@@ -137,7 +187,6 @@ def fetch(dest_dir):
     os.makedirs(dest_dir, exist_ok=True)
     manifest = _load_manifest(dest_dir)
     old = manifest['tables'] if manifest else {}
-    changed = _changed_tables(manifest, tables)
     new = {}
     todo = {}
     for name, t in tables.items():
@@ -146,10 +195,6 @@ def fetch(dest_dir):
         else:
             todo[name] = t
     _log(f"  {len(todo)} to download, {len(new)} unchanged")
-    if changed is None:
-        _log("  no previous manifest: changed set unknown")
-    else:
-        _log(f"  {len(changed)} table(s) changed since previous fetch")
 
     parent = os.path.dirname(os.path.abspath(dest_dir))
     tmp = tempfile.mkdtemp(prefix='.sde-fetch-', dir=parent)
@@ -169,6 +214,11 @@ def fetch(dest_dir):
             _log(f"  removed {len(removed)} table(s) no longer in the release: {', '.join(sorted(removed))}")
         for f in os.listdir(tmp):
             os.replace(os.path.join(tmp, f), os.path.join(dest_dir, f))
+        changed = _changed_tables(manifest, new)
+        if changed is None:
+            _log("  changed set unknown (no previous manifest): full load")
+        else:
+            _log(f"  {len(changed)} table(s) with changed content: {', '.join(changed)}")
         _write_manifest(dest_dir, index, new, changed)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
@@ -178,6 +228,12 @@ def fetch(dest_dir):
 def main():
     if len(sys.argv) == 2 and sys.argv[1] == 'build':
         print(release_index()['buildNumber'])
+    elif len(sys.argv) == 3 and sys.argv[1] == 'check':
+        pending = check(sys.argv[2])
+        if pending:
+            print(*pending)
+    elif len(sys.argv) == 3 and sys.argv[1] == 'done':
+        mark_done(sys.argv[2])
     elif len(sys.argv) == 3 and sys.argv[1] == 'fetch':
         print(fetch(sys.argv[2]))
     elif len(sys.argv) == 3 and sys.argv[1] == 'changed':

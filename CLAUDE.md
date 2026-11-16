@@ -6,6 +6,10 @@ Always use `.venv/bin/python`, never system `python3`. SQLAlchemy and all DB dri
 
 Dependencies are managed by uv: `pyproject.toml` declares them, `uv.lock` pins them, and `uv sync --frozen` builds `.venv`. There is no pip in the venv — add/remove packages with `uv add` / `uv remove`, never by hand-editing the venv. SQLAlchemy is on 2.1. UUID columns use `_uuid()` in `tables.py`, which forces CHAR(32) on MySQL/MariaDB — 2.1 would otherwise emit MariaDB's native UUID type, which breaks importing the published dump into plain MySQL.
 
+## Tests
+
+`.venv/bin/python -m pytest` runs `tests/` (pytest is in the uv `dev` group). Changes to `fetch_sde.py` or `run-conversion.sh`'s check/fetch/publish logic need a test there; the pipeline tests run the real script in a sandbox with every external command stubbed, so never point them at real paths or config.
+
 ## Architecture
 
 `Load.py` is the entry point. It reads `sdeloader.cfg` for DB URLs and the SDE source path, then dispatches to loader modules in `tableloader/tableFunctions/`. All table schemas live in `tableloader/tables.py`.
