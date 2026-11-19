@@ -252,17 +252,21 @@ start_mssql() {
         exit 1
     fi
 
+    # Accepting connections isn't enough: user databases are still recovering
+    # for a moment after that, and a login whose default database is $MSSQL_DB
+    # fails until it is ONLINE (error 18456 state 38).
     log "Waiting for MSSQL to be ready..."
     for i in $(seq 1 60); do
         if docker exec "$MSSQL_CONTAINER" \
             /opt/mssql-tools18/bin/sqlcmd \
-            -S localhost -U SA -P "$MSSQL_SA_PASS" -C \
-            -Q "SELECT 1" > /dev/null 2>&1; then
+            -S localhost -U SA -P "$MSSQL_SA_PASS" -C -b \
+            -Q "IF ISNULL(CONVERT(nvarchar(60), DATABASEPROPERTYEX(N'${MSSQL_DB}', 'Status')), '') <> 'ONLINE' RAISERROR('${MSSQL_DB} not online', 16, 1)" \
+            > /dev/null 2>&1; then
             log "MSSQL ready after ${i}s"
             return 0
         fi
         if [ "$i" -eq 60 ]; then
-            log "ERROR: MSSQL did not become ready in time"
+            log "ERROR: MSSQL database ${MSSQL_DB} did not come online in time"
             exit 1
         fi
         sleep 1
